@@ -10,9 +10,6 @@ UNinjaAbilitySystemComponent::UNinjaAbilitySystemComponent()
 {
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
-
-	ReplicationMode = ENinjaGameplayEffectReplicationMode::Mixed;
-	SetGameplayReplicationMode(ReplicationMode);
 }
 
 void UNinjaAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -152,22 +149,6 @@ FGameplayAbilitySpecHandle UNinjaAbilitySystemComponent::GiveAbilityFromClass(co
 	}
 
 	return Handle;
-}
-
-void UNinjaAbilitySystemComponent::SetGameplayReplicationMode(const ENinjaGameplayEffectReplicationMode NewReplicationMode)
-{
-	switch(NewReplicationMode)
-	{
-		case ENinjaGameplayEffectReplicationMode::Minimal:
-			SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
-			break;
-		case ENinjaGameplayEffectReplicationMode::Mixed:
-			SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-			break;
-		case ENinjaGameplayEffectReplicationMode::Full:
-			SetReplicationMode(EGameplayEffectReplicationMode::Full);
-			break;
-	}
 }
 
 void UNinjaAbilitySystemComponent::GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const

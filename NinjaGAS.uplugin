@@ -31,6 +31,10 @@
         {
             "Name": "ModelViewViewModel",
             "Enabled": true
+        },
+        {
+            "Name": "ModularGameplay",
+            "Enabled": true
         }
     ]
 }

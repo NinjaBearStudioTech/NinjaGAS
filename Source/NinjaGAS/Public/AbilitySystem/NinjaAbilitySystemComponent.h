@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
-#include "Types/ENinjaGameplayEffectReplicationMode.h"
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaAbilitySystemComponent.generated.h"
 
@@ -63,12 +62,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
 	FGameplayAbilitySpecHandle GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1, int32 Input = -1);
 
-	/**
-	 * Sets a new Replication Mode for this Ability System Component.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
-	void SetGameplayReplicationMode(ENinjaGameplayEffectReplicationMode NewReplicationMode);
-	
 protected:
 
 	/**
@@ -80,12 +73,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	TObjectPtr<UNinjaAbilitiesDataAsset> DefaultAbilitySetup;
 
-	/**
-	 * The Replication mode applied to this Ability System.
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
-	ENinjaGameplayEffectReplicationMode ReplicationMode;
-	
 	/**
 	 * Initializes default abilities, effects and attribute sets.
 	 *

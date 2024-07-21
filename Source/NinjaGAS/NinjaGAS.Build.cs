@@ -14,7 +14,8 @@ public class NinjaGAS : ModuleRules
 			"InputCore", 
 			"GameplayTags",
 			"GameplayTasks",
-			"GameplayAbilities"
+			"GameplayAbilities",
+			"ModularGameplay"
 		});
 		
 		PrivateDependencyModuleNames.AddRange(new []
