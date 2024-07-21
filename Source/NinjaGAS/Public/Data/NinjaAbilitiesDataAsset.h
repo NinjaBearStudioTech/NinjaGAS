@@ -1,0 +1,41 @@
+﻿// Ninja Bear Studio Inc., all rights reserved.
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/Types/FNinjaAbilityDefaults.h"
+#include "Engine/DataAsset.h"
+#include "NinjaAbilitiesDataAsset.generated.h"
+
+/**
+ * Configures abilities that can be assigned to an avatar.
+ */
+UCLASS()
+class NINJAGAS_API UNinjaAbilitiesDataAsset : public UPrimaryDataAsset
+{
+	
+	GENERATED_BODY()
+
+public:
+	
+	/** Asset type that uniquely identifies this data asset. */
+	static FPrimaryAssetType AssetType;	
+
+	/** List of Attribute Sets assigned to an avatar. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "AttributeSet"))
+	TArray<FDefaultAttributeSet> DefaultAttributeSets;
+
+	/** List of Gameplay Effects assigned to an avatar. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "GameplayEffect"))
+	TArray<FDefaultGameplayEffect> DefaultGameplayEffects;
+
+	/** List of Gameplay Abilities assigned to an avatar. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "GameplayAbility"))
+	TArray<FDefaultGameplayAbility> DefaultGameplayAbilities;
+
+	UNinjaAbilitiesDataAsset();
+
+	// -- Begin Primary Data Asset implementation
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+	// -- End Primary Data Asset implementation
+	
+};

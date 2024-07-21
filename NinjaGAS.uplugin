@@ -1,0 +1,36 @@
+﻿{
+    "FileVersion": 3,
+    "Version": 1,
+    "VersionName": "1.0.0",
+    "FriendlyName": "NinjaGAS",
+    "Description": "Boilerplate and support for the Gameplay Ability System.",
+    "Category": "Gameplay",
+    "CreatedBy": "Ninja Bear Studio Inc.",
+    "CreatedByURL": "https://www.ninjabear.studio",
+    "DocsURL": "https://docs.ninjabear.studio/Ninja-GAS",
+    "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/dbb94502bf8c4c348c97e0b53b6f54e5",
+    "CanContainContent": true,
+    "IsBetaVersion": false,
+    "IsExperimentalVersion": false,
+    "Installed": true,
+    "Modules": [
+        {
+            "Name": "NinjaGAS",
+            "Type": "Runtime",
+            "LoadingPhase": "Default",
+            "PlatformAllowList": [
+                "Win64"
+            ]
+        }
+    ],
+    "Plugins": [
+        {
+            "Name": "GameplayAbilities",
+            "Enabled": true
+        },
+        {
+            "Name": "ModelViewViewModel",
+            "Enabled": true
+        }
+    ]
+}
