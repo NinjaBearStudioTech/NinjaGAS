@@ -4,13 +4,13 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/Types/FNinjaAbilityDefaults.h"
 #include "Engine/DataAsset.h"
-#include "NinjaAbilitiesDataAsset.generated.h"
+#include "NinjaGASDataAsset.generated.h"
 
 /**
  * Configures abilities that can be assigned to an avatar.
  */
 UCLASS()
-class NINJAGAS_API UNinjaAbilitiesDataAsset : public UPrimaryDataAsset
+class NINJAGAS_API UNinjaGASDataAsset : public UPrimaryDataAsset
 {
 	
 	GENERATED_BODY()
@@ -32,7 +32,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "GameplayAbility"))
 	TArray<FDefaultGameplayAbility> DefaultGameplayAbilities;
 
-	UNinjaAbilitiesDataAsset();
+	UNinjaGASDataAsset();
 
 	// -- Begin Primary Data Asset implementation
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;

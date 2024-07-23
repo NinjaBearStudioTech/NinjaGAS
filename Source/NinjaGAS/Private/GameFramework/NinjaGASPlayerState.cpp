@@ -1,15 +1,15 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
-#include "GameFramework/NinjaAbilitiesPlayerState.h"
+#include "GameFramework/NinjaGASPlayerState.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/NinjaAbilitySystemComponent.h"
+#include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Components/PlayerStateComponent.h"
 
 class UPlayerStateComponent;
-FName ANinjaAbilitiesPlayerState::AbilityComponentName = TEXT("AbilitySystem");
+FName ANinjaGASPlayerState::AbilityComponentName = TEXT("AbilitySystem");
 
-ANinjaAbilitiesPlayerState::ANinjaAbilitiesPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bReplicates = true;
 	MinNetUpdateFrequency = 33.f;
@@ -17,12 +17,12 @@ ANinjaAbilitiesPlayerState::ANinjaAbilitiesPlayerState(const FObjectInitializer&
 	NetPriority = 3.f;
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Mixed;
 	
-	AbilitySystemComponent = CreateOptionalDefaultSubobject<UNinjaAbilitySystemComponent>(AbilityComponentName);
+	AbilitySystemComponent = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilityComponentName);
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(AbilityReplicationMode);
 }
 
-void ANinjaAbilitiesPlayerState::PostInitProperties()
+void ANinjaGASPlayerState::PostInitProperties()
 {
 	Super::PostInitProperties();
 
@@ -35,31 +35,31 @@ void ANinjaAbilitiesPlayerState::PostInitProperties()
 	}
 }
 
-void ANinjaAbilitiesPlayerState::PreInitializeComponents()
+void ANinjaGASPlayerState::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 	UGameFrameworkComponentManager::AddGameFrameworkComponentReceiver(this);
 }
 
-void ANinjaAbilitiesPlayerState::BeginPlay()
+void ANinjaGASPlayerState::BeginPlay()
 {
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFrameworkComponentManager::NAME_GameActorReady);
 	Super::BeginPlay();
 }
 
-void ANinjaAbilitiesPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void ANinjaGASPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UGameFrameworkComponentManager::RemoveGameFrameworkComponentReceiver(this);
 	Super::EndPlay(EndPlayReason);
 }
 
-void ANinjaAbilitiesPlayerState::CopyProperties(APlayerState* TargetPlayerState)
+void ANinjaGASPlayerState::CopyProperties(APlayerState* TargetPlayerState)
 {
 	Super::CopyProperties(TargetPlayerState);
 	DispatchCopyToPlayerStateComponents(TargetPlayerState);
 }
 
-void ANinjaAbilitiesPlayerState::DispatchCopyToPlayerStateComponents(APlayerState* TargetPlayerState)
+void ANinjaGASPlayerState::DispatchCopyToPlayerStateComponents(APlayerState* TargetPlayerState)
 {
 	check(IsValid(TargetPlayerState));
 	
@@ -80,13 +80,13 @@ void ANinjaAbilitiesPlayerState::DispatchCopyToPlayerStateComponents(APlayerStat
 	}
 }
 
-void ANinjaAbilitiesPlayerState::Reset()
+void ANinjaGASPlayerState::Reset()
 {
 	Super::Reset();
 	DispatchResetPlayerStateComponents();
 }
 
-void ANinjaAbilitiesPlayerState::DispatchResetPlayerStateComponents()
+void ANinjaGASPlayerState::DispatchResetPlayerStateComponents()
 {
 	TArray<UPlayerStateComponent*> ModularComponents;
 	GetComponents(ModularComponents);
@@ -97,7 +97,7 @@ void ANinjaAbilitiesPlayerState::DispatchResetPlayerStateComponents()
 	}
 }
 
-UAbilitySystemComponent* ANinjaAbilitiesPlayerState::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ANinjaGASPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }

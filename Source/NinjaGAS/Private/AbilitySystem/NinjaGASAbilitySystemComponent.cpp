@@ -1,18 +1,16 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
-#include "AbilitySystem/NinjaAbilitySystemComponent.h"
+#include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 
 #include "AbilitySystem/Interfaces/AbilitySystemDefaultsInterface.h"
-#include "Data/NinjaAbilitiesDataAsset.h"
+#include "Data/NinjaGASDataAsset.h"
 
-DEFINE_LOG_CATEGORY(LogNinjaFrameworkAbilitySystemComponent);
-
-UNinjaAbilitySystemComponent::UNinjaAbilitySystemComponent()
+UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 {
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
 }
 
-void UNinjaAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
+void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
 	// Guard condition to ensure we should clear/init for this new Avatar Actor.
 	const bool bAvatarHasChanged = AbilityActorInfo && AbilityActorInfo->AvatarActor != InAvatarActor && InAvatarActor != nullptr;
@@ -33,7 +31,7 @@ void UNinjaAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	}
 }
 
-void UNinjaAbilitySystemComponent::InitializeDefaults(AActor* NewAvatarActor)
+void UNinjaGASAbilitySystemComponent::InitializeDefaults(AActor* NewAvatarActor)
 {
 	if (!IsValid(NewAvatarActor) || !IsOwnerActorAuthoritative())
 	{
@@ -41,7 +39,7 @@ void UNinjaAbilitySystemComponent::InitializeDefaults(AActor* NewAvatarActor)
 	}
 
 	const IAbilitySystemDefaultsInterface* Defaults = Cast<IAbilitySystemDefaultsInterface>(NewAvatarActor);
-	if (Defaults == nullptr)
+	if (Defaults == nullptr || !Defaults->HasDefaultAbilitySettings())
 	{
 		Defaults = Cast<IAbilitySystemDefaultsInterface>(this);
 	}
@@ -58,11 +56,11 @@ void UNinjaAbilitySystemComponent::InitializeDefaults(AActor* NewAvatarActor)
 	Defaults->GetDefaultGameplayAbilities(DefaultAbilities);
 	InitializeGameplayAbilities(DefaultAbilities);
 
-	UE_LOG(LogNinjaFrameworkAbilitySystemComponent, Log, TEXT("Initialized ASC defaults for %s: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults for %s: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
 		*GetNameSafe(NewAvatarActor), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num());
 }
 
-void UNinjaAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets)
+void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets)
 {
 	for (const auto& Entry : AttributeSets)
 	{
@@ -80,7 +78,7 @@ void UNinjaAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefault
 	}		
 }
 
-void UNinjaAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDefaultGameplayEffect>& GameplayEffects)
+void UNinjaGASAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDefaultGameplayEffect>& GameplayEffects)
 {
 	const int32 GameplayEffectCount = GameplayEffects.Num(); 
 	if (GameplayEffectCount > 0)
@@ -96,7 +94,7 @@ void UNinjaAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDefau
 	}
 }
 
-void UNinjaAbilitySystemComponent::InitializeGameplayAbilities(const TArray<FDefaultGameplayAbility>& GameplayAbilities)
+void UNinjaGASAbilitySystemComponent::InitializeGameplayAbilities(const TArray<FDefaultGameplayAbility>& GameplayAbilities)
 {
 	const int32 GameplayAbilityCount = GameplayAbilities.Num(); 
 	if (GameplayAbilityCount > 0)
@@ -112,7 +110,7 @@ void UNinjaAbilitySystemComponent::InitializeGameplayAbilities(const TArray<FDef
 	}
 }
 
-FActiveGameplayEffectHandle UNinjaAbilitySystemComponent::ApplyGameplayEffectClassToSelf(const TSubclassOf<UGameplayEffect> EffectClass, const float Level)
+FActiveGameplayEffectHandle UNinjaGASAbilitySystemComponent::ApplyGameplayEffectClassToSelf(const TSubclassOf<UGameplayEffect> EffectClass, const float Level)
 {
 	FActiveGameplayEffectHandle Handle;
     
@@ -126,7 +124,7 @@ FActiveGameplayEffectHandle UNinjaAbilitySystemComponent::ApplyGameplayEffectCla
 		{
 			Handle = ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 			
-			UE_LOG(LogNinjaFrameworkAbilitySystemComponent, Verbose, TEXT("[%s] Effect '%s' granted at level %f."),
+			UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("[%s] Effect '%s' granted at level %f."),
 				*GetNameSafe(GetAvatarActor()), *GetNameSafe(EffectClass), Level);
 		}
 	}
@@ -134,7 +132,7 @@ FActiveGameplayEffectHandle UNinjaAbilitySystemComponent::ApplyGameplayEffectCla
 	return Handle;	
 }
 
-FGameplayAbilitySpecHandle UNinjaAbilitySystemComponent::GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, int32 Level, int32 Input)
+FGameplayAbilitySpecHandle UNinjaGASAbilitySystemComponent::GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, int32 Level, int32 Input)
 {
 	FGameplayAbilitySpecHandle Handle;
 
@@ -143,7 +141,7 @@ FGameplayAbilitySpecHandle UNinjaAbilitySystemComponent::GiveAbilityFromClass(co
 		const FGameplayAbilitySpec NewAbilitySpec(FGameplayAbilitySpec(AbilityClass, Level, Input, GetOwner()));
 		Handle = GiveAbility(NewAbilitySpec);
 
-		UE_LOG(LogNinjaFrameworkAbilitySystemComponent, Log, TEXT("[%s] Ability '%s' %s at level %d."),
+		UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Ability '%s' %s at level %d."),
 			*GetNameSafe(GetAvatarActor()), *GetNameSafe(AbilityClass),
 			Handle.IsValid() ? TEXT("sucessfully granted") : TEXT("failed to be granted"), Level);
 	}
@@ -151,7 +149,7 @@ FGameplayAbilitySpecHandle UNinjaAbilitySystemComponent::GiveAbilityFromClass(co
 	return Handle;
 }
 
-void UNinjaAbilitySystemComponent::GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const
+void UNinjaGASAbilitySystemComponent::GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const
 {
 	if (IsValid(DefaultAbilitySetup))
 	{
@@ -159,7 +157,7 @@ void UNinjaAbilitySystemComponent::GetDefaultAttributeSets(TArray<FDefaultAttrib
 	}
 }
 
-void UNinjaAbilitySystemComponent::GetDefaultGameplayEffects(TArray<FDefaultGameplayEffect>& OutDefaultEffects) const
+void UNinjaGASAbilitySystemComponent::GetDefaultGameplayEffects(TArray<FDefaultGameplayEffect>& OutDefaultEffects) const
 {
 	if (IsValid(DefaultAbilitySetup))
 	{
@@ -167,7 +165,7 @@ void UNinjaAbilitySystemComponent::GetDefaultGameplayEffects(TArray<FDefaultGame
 	}
 }
 
-void UNinjaAbilitySystemComponent::GetDefaultGameplayAbilities(TArray<FDefaultGameplayAbility>& OutDefaultAbilities) const
+void UNinjaGASAbilitySystemComponent::GetDefaultGameplayAbilities(TArray<FDefaultGameplayAbility>& OutDefaultAbilities) const
 {
 	if (IsValid(DefaultAbilitySetup))
 	{
@@ -175,13 +173,13 @@ void UNinjaAbilitySystemComponent::GetDefaultGameplayAbilities(TArray<FDefaultGa
 	}
 }
 
-void UNinjaAbilitySystemComponent::ClearActorInfo()
+void UNinjaGASAbilitySystemComponent::ClearActorInfo()
 {
 	ClearDefaults();
 	Super::ClearActorInfo();
 }
 
-void UNinjaAbilitySystemComponent::ClearDefaults()
+void UNinjaGASAbilitySystemComponent::ClearDefaults()
 {
 	if (!IsOwnerActorAuthoritative())
 	{
@@ -212,6 +210,6 @@ void UNinjaAbilitySystemComponent::ClearDefaults()
 		++AttributeSetCount;
 	}
 
-	UE_LOG(LogNinjaFrameworkAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
 		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount);
 }

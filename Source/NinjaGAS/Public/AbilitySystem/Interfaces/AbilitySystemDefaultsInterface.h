@@ -22,6 +22,9 @@ class NINJAGAS_API IAbilitySystemDefaultsInterface
 	GENERATED_BODY()
 
 public:
+
+	/** Informs if the object overrides defaults. */
+	virtual bool HasDefaultAbilitySettings() const { return false; }
 	
 	/** Attribute sets assigned by default. */
 	virtual void GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const = 0;

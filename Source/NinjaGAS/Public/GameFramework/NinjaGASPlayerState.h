@@ -5,7 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
-#include "NinjaAbilitiesPlayerState.generated.h"
+#include "NinjaGASPlayerState.generated.h"
 
 class UAbilitySystemComponent;
 
@@ -19,7 +19,7 @@ class UAbilitySystemComponent;
  * Modular Gameplay Events during, from the proper lifecycle methods.
  */
 UCLASS()
-class NINJAGAS_API ANinjaAbilitiesPlayerState : public APlayerState, public IAbilitySystemInterface
+class NINJAGAS_API ANinjaGASPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	
 	GENERATED_BODY()
@@ -29,7 +29,7 @@ public:
 	/** Name used to create the Ability Component. Can be used to overwrite the base class. */
 	static FName AbilityComponentName;
 
-	ANinjaAbilitiesPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	ANinjaGASPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// -- Begin Player State implementation
 	virtual void PostInitProperties() override;

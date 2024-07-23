@@ -5,17 +5,15 @@
 #include "AbilitySystemComponent.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Types/FNinjaAbilityDefaults.h"
-#include "NinjaAbilitySystemComponent.generated.h"
+#include "NinjaGASAbilitySystemComponent.generated.h"
 
-class UNinjaAbilitiesDataAsset;
-
-DECLARE_LOG_CATEGORY_EXTERN(LogNinjaFrameworkAbilitySystemComponent, Log, All);
+class UNinjaGASDataAsset;
 
 /**
  * Specialized version of the Ability System Component, supporting defaults and callbacks.
  */
 UCLASS(ClassGroup=(NinjaGAS), meta=(BlueprintSpawnableComponent))
-class NINJAGAS_API UNinjaAbilitySystemComponent : public UAbilitySystemComponent, public IAbilitySystemDefaultsInterface
+class NINJAGAS_API UNinjaGASAbilitySystemComponent : public UAbilitySystemComponent, public IAbilitySystemDefaultsInterface
 {
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilitySystemAvatarChangedSignature, AActor*, NewAvatar);
@@ -28,7 +26,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FAbilitySystemAvatarChangedSignature OnAbilitySystemAvatarChanged;
 	
-	UNinjaAbilitySystemComponent();
+	UNinjaGASAbilitySystemComponent();
 
 	// -- Begin Ability System Component implementation
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
@@ -71,7 +69,7 @@ protected:
 	 * in which case this data asset is ignored in favour of that one. 
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
-	TObjectPtr<UNinjaAbilitiesDataAsset> DefaultAbilitySetup;
+	TObjectPtr<UNinjaGASDataAsset> DefaultAbilitySetup;
 
 	/**
 	 * Initializes default abilities, effects and attribute sets.
