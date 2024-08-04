@@ -11,6 +11,22 @@ class UNinjaGASDataAsset;
 class UNinjaGASAbilitySystemComponent;
 
 /**
+ * Determines how the Ability System will be initialized by this character class.
+ */
+UENUM(BlueprintType)
+enum class EAbilitySystemInitializationStrategy : uint8
+{
+	/** This character will initialize its own ASC. */
+	Self,
+
+	/** This character will retrieve its ASC from the Player State. */
+	PlayerState,
+
+	/** This character will retrieve its ASC on Begin Play, after a Gameplay Feature event. */
+	Feature
+};
+
+/**
  * Base character class, with pre-configured Ability System Component features.
  */
 UCLASS(Abstract)
@@ -21,6 +37,9 @@ class NINJAGAS_API ANinjaGASCharacter : public ACharacter, public IAbilitySystem
 
 public:
 
+	/** Name for the ASC Component, if initialized by the class. */
+	static FName AbilitySystemComponentName;
+	
 	ANinjaGASCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// -- Begin Ability System implementation
@@ -33,6 +52,10 @@ public:
 
 protected:
 
+	/** Determines how the Ability System will be initialized for this character. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
+	EAbilitySystemInitializationStrategy AbilityInitializationStrategy;
+	
 	/** Informs if this character has an override for the settings. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System", meta = (InlineEditConditionToggle))
 	bool bOverridesAbilitySettings;

@@ -5,6 +5,8 @@
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Data/NinjaGASDataAsset.h"
 
+FName ANinjaGASCharacter::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
+
 ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bReplicates = true;
@@ -13,6 +15,7 @@ ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializ
 	MinNetUpdateFrequency = 11.f;
 	NetUpdateFrequency = 33.f;
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	AbilityInitializationStrategy = EAbilitySystemInitializationStrategy::Self;
 }
 
 UAbilitySystemComponent* ANinjaGASCharacter::GetAbilitySystemComponent() const
