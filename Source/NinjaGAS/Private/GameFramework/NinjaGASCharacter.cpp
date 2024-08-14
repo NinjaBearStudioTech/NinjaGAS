@@ -2,6 +2,7 @@
 #include "GameFramework/NinjaGASCharacter.h"
 
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
+#include "Components/GameFrameworkComponentManager.h"
 #include "Data/NinjaGASDataAsset.h"
 
 FName ANinjaGASCharacter::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
@@ -24,8 +25,28 @@ ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializ
 	}
 }
 
+void ANinjaGASCharacter::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	if (IsValid(CharacterAbilities))
+	{
+		// Set the Replication Mode after properties are initialized but before components.
+		// This way, once the Ability System Component initializes, it has the correct value.
+		//
+		CharacterAbilities->SetReplicationMode(AbilityReplicationMode);
+	}	
+}
+
+void ANinjaGASCharacter::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+	UGameFrameworkComponentManager::AddGameFrameworkComponentReceiver(this);
+}
+
 void ANinjaGASCharacter::BeginPlay()
 {
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFrameworkComponentManager::NAME_GameActorReady);
 	Super::BeginPlay();
 
 	if (IsValid(CharacterAbilities))
@@ -33,6 +54,12 @@ void ANinjaGASCharacter::BeginPlay()
 		// The ASC is created by this class. Initialize it on Begin Play.
 		SetupAbilitySystemComponent(this);	
 	}
+}
+
+void ANinjaGASCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UGameFrameworkComponentManager::RemoveGameFrameworkComponentReceiver(this);
+	Super::EndPlay(EndPlayReason);
 }
 
 UAbilitySystemComponent* ANinjaGASCharacter::GetAbilitySystemComponent() const

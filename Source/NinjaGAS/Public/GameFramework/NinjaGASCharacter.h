@@ -27,7 +27,12 @@ public:
 	
 	ANinjaGASCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	// -- Begin Pawn implementation
+	virtual void PostInitProperties() override;
+	virtual void PreInitializeComponents() override;
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	// -- End Pawn implementation
 	
 	// -- Begin Ability System implementation
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;

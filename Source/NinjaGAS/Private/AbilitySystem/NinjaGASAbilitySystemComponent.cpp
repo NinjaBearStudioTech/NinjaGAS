@@ -1,13 +1,17 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 
+#include "NinjaGASLog.h"
 #include "AbilitySystem/Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Data/NinjaGASDataAsset.h"
+#include "Interfaces/BatchGameplayAbilityInterface.h"
 
 UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 {
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
+
+	bShouldDoServerAbilityRPCBatch = true;
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -132,7 +136,7 @@ FActiveGameplayEffectHandle UNinjaGASAbilitySystemComponent::ApplyGameplayEffect
 	return Handle;	
 }
 
-FGameplayAbilitySpecHandle UNinjaGASAbilitySystemComponent::GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, int32 Level, int32 Input)
+FGameplayAbilitySpecHandle UNinjaGASAbilitySystemComponent::GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, const int32 Level, const int32 Input)
 {
 	FGameplayAbilitySpecHandle Handle;
 
@@ -147,6 +151,39 @@ FGameplayAbilitySpecHandle UNinjaGASAbilitySystemComponent::GiveAbilityFromClass
 	}
 
 	return Handle;
+}
+
+bool UNinjaGASAbilitySystemComponent::TryBatchActivateAbility(const FGameplayAbilitySpecHandle AbilityHandle, const bool bEndAbilityImmediately)
+{
+	bool bAbilityActivated = false;
+	if (AbilityHandle.IsValid())
+	{
+		GAS_LOG(Warning, "Ability handle is invalid!");
+		return bAbilityActivated;
+	}
+	
+	FScopedServerAbilityRPCBatcher Batch(this, AbilityHandle);
+	bAbilityActivated = TryActivateAbility(AbilityHandle, true);
+
+	if (!bEndAbilityImmediately)
+	{
+		const FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(AbilityHandle);
+		if (AbilitySpec != nullptr)
+		{
+			UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
+			if (IsValid(Ability) && Ability->Implements<UBatchGameplayAbilityInterface>())
+			{
+				IBatchGameplayAbilityInterface::Execute_EndAbilityFromBatch(Ability);
+			}
+			else
+			{
+				const FString Message = IsValid(Ability) ? FString::Printf(TEXT("%s does not implement Batch Gameplay Ability Interface"), *GetNameSafe(Ability)) : "is invalid"; 
+				GAS_LOG_ARGS(Error, "Ability %s!", *Message);
+			}
+		}
+	}
+
+	return bAbilityActivated;
 }
 
 void UNinjaGASAbilitySystemComponent::GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const
@@ -177,6 +214,11 @@ void UNinjaGASAbilitySystemComponent::ClearActorInfo()
 {
 	ClearDefaults();
 	Super::ClearActorInfo();
+}
+
+bool UNinjaGASAbilitySystemComponent::ShouldDoServerAbilityRPCBatch() const
+{
+	return bShouldDoServerAbilityRPCBatch;
 }
 
 void UNinjaGASAbilitySystemComponent::ClearDefaults()

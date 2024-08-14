@@ -31,6 +31,7 @@ public:
 	// -- Begin Ability System Component implementation
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	virtual void ClearActorInfo() override;
+	virtual bool ShouldDoServerAbilityRPCBatch() const override;
 	// -- End Ability System Component implementation
 
 	// -- Begin Ability System Defaults implementation
@@ -60,17 +61,39 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
 	FGameplayAbilitySpecHandle GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1, int32 Input = -1);
 
+	/**
+	 * Tries to activate the ability by the handle, aggregating all RPCs that happened in the same frame.
+	 *
+	 * @param AbilityHandle
+	 *		Handle used to identify the ability.
+	 *		
+	 * @param bEndAbilityImmediately
+	 *		Determines if the EndAbility is triggered right away or later, with its own RPC. This requires the Ability
+	 *		to either implement IBatchGameplayAbilityInterface or be a subclass of NinjaGASGameplayAbility.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	virtual bool TryBatchActivateAbility(FGameplayAbilitySpecHandle AbilityHandle, bool bEndAbilityImmediately);
+	
 protected:
 
 	/**
 	 * Default configuration for the Ability System.
 	 * 
-	 * Can be overriden by avatars implementing the Ability System Defaults Interface,
-	 * in which case this data asset is ignored in favour of that one. 
+	 * Can be overriden by avatars implementing the Ability System Defaults Interface.
+	 * If avatars override the default data asset, this one is fully ignored.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	TObjectPtr<UNinjaGASDataAsset> DefaultAbilitySetup;
 
+	/**
+	 * Determines if the ASC can batch-activate abilities.
+	 *
+	 * This means that multiple abilities activating together can be bundled in the same RPC.
+	 * Once enabled, abilities can be activated in a batch via the "TryBatchActivate" functions.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
+	bool bShouldDoServerAbilityRPCBatch;
+	
 	/**
 	 * Initializes default abilities, effects and attribute sets.
 	 *
