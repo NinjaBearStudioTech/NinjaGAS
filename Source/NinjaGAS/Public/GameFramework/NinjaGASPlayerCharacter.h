@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "NinjaGASCharacter.h"
-#include "ANinjaGASPlayerCharacter.generated.h"
+#include "NinjaGASPlayerCharacter.generated.h"
 
 class UNinjaGASAbilitySystemComponent;
 
@@ -11,14 +11,14 @@ class UNinjaGASAbilitySystemComponent;
  * A specialized class that will obtain the Ability System Component from the Player State.
  */
 UCLASS(Abstract)
-class NINJAGAS_API AANinjaGASPlayerCharacter : public ANinjaGASCharacter
+class NINJAGAS_API ANinjaGASPlayerCharacter : public ANinjaGASCharacter
 {
 	
 	GENERATED_BODY()
 
 public:
 
-	AANinjaGASPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	ANinjaGASPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// -- Begin Pawn implementation
 	virtual void PossessedBy(AController* NewController) override;

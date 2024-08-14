@@ -1,39 +1,40 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
-#include "GameFramework/ANinjaGASPlayerCharacter.h"
+#include "GameFramework/NinjaGASPlayerCharacter.h"
 
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"
 
-AANinjaGASPlayerCharacter::AANinjaGASPlayerCharacter(const FObjectInitializer& ObjectInitializer)
+ANinjaGASPlayerCharacter::ANinjaGASPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.DoNotCreateDefaultSubobject(AbilitySystemComponentName))
 {
+	bInitializeAbilityComponentOnBeginPlay = false;
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Mixed;
 }
 
-void AANinjaGASPlayerCharacter::PossessedBy(AController* NewController)
+void ANinjaGASPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
 	if (IsPlayerControlled())
 	{
-		InitializeFromPlayerState();	
+		InitializeFromPlayerState();
 	}
 }
 
-void AANinjaGASPlayerCharacter::UnPossessed()
+void ANinjaGASPlayerCharacter::UnPossessed()
 {
 	ClearAbilitySystemComponent();
 	Super::UnPossessed();
 }
 
-void AANinjaGASPlayerCharacter::OnRep_PlayerState()
+void ANinjaGASPlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	InitializeFromPlayerState();
 }
 
-void AANinjaGASPlayerCharacter::InitializeFromPlayerState()
+void ANinjaGASPlayerCharacter::InitializeFromPlayerState()
 {
 	const APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (IsValid(PlayerController))
@@ -55,7 +56,7 @@ void AANinjaGASPlayerCharacter::InitializeFromPlayerState()
 	}
 }
 
-UAbilitySystemComponent* AANinjaGASPlayerCharacter::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ANinjaGASPlayerCharacter::GetAbilitySystemComponent() const
 {
 	if (CharacterAbilitiesPtr.IsValid() && CharacterAbilitiesPtr->IsValidLowLevelFast())
 	{
@@ -66,7 +67,7 @@ UAbilitySystemComponent* AANinjaGASPlayerCharacter::GetAbilitySystemComponent() 
 	return nullptr;	
 }
 
-void AANinjaGASPlayerCharacter::SetupAbilitySystemComponent(AActor* AbilitySystemOwner)
+void ANinjaGASPlayerCharacter::SetupAbilitySystemComponent(AActor* AbilitySystemOwner)
 {
 	UAbilitySystemComponent* AbilityComponent = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(AbilitySystemOwner);
 	if (!IsValid(AbilityComponent))
@@ -84,7 +85,7 @@ void AANinjaGASPlayerCharacter::SetupAbilitySystemComponent(AActor* AbilitySyste
 	CharacterAbilitiesPtr = CustomAbilityComponent;	
 }
 
-void AANinjaGASPlayerCharacter::ClearAbilitySystemComponent()
+void ANinjaGASPlayerCharacter::ClearAbilitySystemComponent()
 {
 	if (CharacterAbilitiesPtr.IsValid() && CharacterAbilitiesPtr->IsValidLowLevelFast())
 	{

@@ -7,6 +7,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "NinjaGASFunctionLibrary.generated.h"
 
+class UNinjaGASAbilitySystemComponent;
+
 /**
  * Helper functions for the Ninja GAS system.
  */
@@ -18,6 +20,13 @@ class NINJAGAS_API UNinjaGASFunctionLibrary : public UBlueprintFunctionLibrary
 
 public:
 
+	/**
+	 * Provides the custom (Ninja GAS) Ability System Component from an owner.
+	 * Performs like the Ability System Globals version, but handles the cast for you.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ninja GAS", meta = (ReturnDisplayName = "ASC"))
+	static UNinjaGASAbilitySystemComponent* GetCustomAbilitySystemComponentFromActor(AActor* Owner);
+	
 	/**
 	 * Sends a Gameplay Event to the Owner's of an Ability System Component.
 	 *

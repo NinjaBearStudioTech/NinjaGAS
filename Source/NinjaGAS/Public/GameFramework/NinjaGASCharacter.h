@@ -12,7 +12,7 @@ class UNinjaGASDataAsset;
 class UNinjaGASAbilitySystemComponent;
 
 /**
- * Base character class, with a pre-configured Ability System Component.
+ * Base Character class, with a pre-configured Ability System Component.
  */
 UCLASS(Abstract)
 class NINJAGAS_API ANinjaGASCharacter : public ACharacter, public IAbilitySystemInterface, public IAbilitySystemDefaultsInterface
@@ -27,12 +27,12 @@ public:
 	
 	ANinjaGASCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	// -- Begin Pawn implementation
+	// -- Begin Character implementation
 	virtual void PostInitProperties() override;
 	virtual void PreInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	// -- End Pawn implementation
+	// -- End Character implementation
 	
 	// -- Begin Ability System implementation
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -44,6 +44,9 @@ public:
 
 protected:
 
+	/** Allows subclasses to skip ASC initialization, most likely because they'll use the Player State. */
+	bool bInitializeAbilityComponentOnBeginPlay;
+	
 	/**
 	 * Sets how the Ability System component will replicate data to clients.
 	 *

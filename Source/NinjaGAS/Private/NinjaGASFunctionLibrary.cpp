@@ -3,6 +3,13 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
+
+UNinjaGASAbilitySystemComponent* UNinjaGASFunctionLibrary::GetCustomAbilitySystemComponentFromActor(AActor* Owner)
+{
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Owner);
+	return Cast<UNinjaGASAbilitySystemComponent>(ASC);	
+}
 
 int32 UNinjaGASFunctionLibrary::SendGameplayEventToActor(const AActor* AbilityOwner, const FGameplayTag EventTag, const FGameplayEventData& EventData)
 {

@@ -1,6 +1,7 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
 #include "GameFramework/NinjaGASCharacter.h"
 
+#include "NinjaGASFunctionLibrary.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Data/NinjaGASDataAsset.h"
@@ -11,6 +12,7 @@ ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializ
 {
 	bReplicates = true;
 	bOverridesAbilitySettings = false;
+	bInitializeAbilityComponentOnBeginPlay = true;
 	NetPriority = 2.f;
 	MinNetUpdateFrequency = 11.f;
 	NetUpdateFrequency = 33.f;
@@ -49,10 +51,16 @@ void ANinjaGASCharacter::BeginPlay()
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFrameworkComponentManager::NAME_GameActorReady);
 	Super::BeginPlay();
 
-	if (IsValid(CharacterAbilities))
+	if (bInitializeAbilityComponentOnBeginPlay)
 	{
-		// The ASC is created by this class. Initialize it on Begin Play.
-		SetupAbilitySystemComponent(this);	
+		// This reinforces the ASC in this class, in case it was provided by a Game Feature.
+		// If found, initializes the instance using the appropriate setup method.
+		//
+		CharacterAbilities = UNinjaGASFunctionLibrary::GetCustomAbilitySystemComponentFromActor(this);
+		if (IsValid(CharacterAbilities))
+		{
+			SetupAbilitySystemComponent(this);
+		}
 	}
 }
 

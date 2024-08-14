@@ -3,7 +3,7 @@
     "Version": 1,
     "VersionName": "1.0.0",
     "FriendlyName": "NinjaGAS",
-    "Description": "Base configuration and utility for the Gameplay Ability System.",
+    "Description": "Base configuration and utility for the Gameplay Ability System (GAS).",
     "Category": "Gameplay",
     "CreatedBy": "Ninja Bear Studio Inc.",
     "CreatedByURL": "https://www.ninjabear.studio",

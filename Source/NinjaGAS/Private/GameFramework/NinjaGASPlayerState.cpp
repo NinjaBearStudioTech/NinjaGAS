@@ -2,6 +2,7 @@
 #include "GameFramework/NinjaGASPlayerState.h"
 
 #include "AbilitySystemComponent.h"
+#include "NinjaGASFunctionLibrary.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Components/PlayerStateComponent.h"
@@ -17,8 +18,11 @@ ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectIniti
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Mixed;
 	
 	AbilitySystemComponent = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilityComponentName);
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(AbilityReplicationMode);
+	if (IsValid(AbilitySystemComponent))
+	{
+		AbilitySystemComponent->SetIsReplicated(true);
+		AbilitySystemComponent->SetReplicationMode(AbilityReplicationMode);	
+	}
 }
 
 void ANinjaGASPlayerState::PostInitProperties()
@@ -44,6 +48,20 @@ void ANinjaGASPlayerState::BeginPlay()
 {
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFrameworkComponentManager::NAME_GameActorReady);
 	Super::BeginPlay();
+
+	// This reinforces the ASC in this class, in case it was provided by a Game Feature.
+	//
+	// If found, initializes the instance with this player state as the owner. As for the avatar, checks
+	// if this Player State already has a pawn and if it does, uses it. Otherwise, uses the Player State.
+	//
+	AbilitySystemComponent = UNinjaGASFunctionLibrary::GetCustomAbilitySystemComponentFromActor(this);
+	if (IsValid(AbilitySystemComponent))
+	{
+		AActor* Avatar = GetPawn();
+		Avatar = IsValid(Avatar) ? Avatar : this;
+		
+		AbilitySystemComponent->InitAbilityActorInfo(this, Avatar);
+	}		
 }
 
 void ANinjaGASPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
