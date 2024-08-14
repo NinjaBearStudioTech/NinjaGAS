@@ -6,7 +6,6 @@
 #include "Components/GameFrameworkComponentManager.h"
 #include "Components/PlayerStateComponent.h"
 
-class UPlayerStateComponent;
 FName ANinjaGASPlayerState::AbilityComponentName = TEXT("AbilitySystem");
 
 ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

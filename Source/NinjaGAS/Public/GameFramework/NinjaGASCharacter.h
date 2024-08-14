@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystem/Interfaces/AbilitySystemDefaultsInterface.h"
 #include "GameFramework/Character.h"
@@ -11,23 +12,7 @@ class UNinjaGASDataAsset;
 class UNinjaGASAbilitySystemComponent;
 
 /**
- * Determines how the Ability System will be initialized by this character class.
- */
-UENUM(BlueprintType)
-enum class EAbilitySystemInitializationStrategy : uint8
-{
-	/** This character will initialize its own ASC. */
-	Self,
-
-	/** This character will retrieve its ASC from the Player State. */
-	PlayerState,
-
-	/** This character will retrieve its ASC on Begin Play, after a Gameplay Feature event. */
-	Feature
-};
-
-/**
- * Base character class, with pre-configured Ability System Component features.
+ * Base character class, with a pre-configured Ability System Component.
  */
 UCLASS(Abstract)
 class NINJAGAS_API ANinjaGASCharacter : public ACharacter, public IAbilitySystemInterface, public IAbilitySystemDefaultsInterface
@@ -42,6 +27,8 @@ public:
 	
 	ANinjaGASCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void BeginPlay() override;
+	
 	// -- Begin Ability System implementation
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual bool HasDefaultAbilitySettings() const override;
@@ -52,9 +39,21 @@ public:
 
 protected:
 
-	/** Determines how the Ability System will be initialized for this character. */
+	/**
+	 * Sets how the Ability System component will replicate data to clients.
+	 *
+	 * As per Dan Tranek's GAS Documentation, these are their descriptions and recommendations:
+	 * 
+	 * - Full:		Single Player, every Gameplay Effect is replicated to every client.
+	 * 
+	 * - Mixed:		Player Actors in Multiplayer, Gameplay Effects are replicated to owning client.
+	 *				Gameplay Tags and Cues will replicate to everyone.
+	 *				
+	 * - Minimal	AI Actors in Multiplayer, Gameplay Effects are never replicated.
+	 *				Gameplay Tags and Cues will replicate to everyone.
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
-	EAbilitySystemInitializationStrategy AbilityInitializationStrategy;
+	EGameplayEffectReplicationMode AbilityReplicationMode;
 	
 	/** Informs if this character has an override for the settings. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System", meta = (InlineEditConditionToggle))
@@ -82,7 +81,8 @@ protected:
 	
 private:
 
-	/** Weak reference to the Character's Ability Component. */
-	TWeakObjectPtr<UNinjaGASAbilitySystemComponent> CharacterAbilitiesPtr;
+	/** The Ability System Component managed by this character class. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess))
+	TObjectPtr<UNinjaGASAbilitySystemComponent> CharacterAbilities;
 	
 };

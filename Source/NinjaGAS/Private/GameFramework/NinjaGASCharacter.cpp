@@ -1,7 +1,6 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
 #include "GameFramework/NinjaGASCharacter.h"
 
-#include "AbilitySystemGlobals.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Data/NinjaGASDataAsset.h"
 
@@ -15,18 +14,30 @@ ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializ
 	MinNetUpdateFrequency = 11.f;
 	NetUpdateFrequency = 33.f;
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-	AbilityInitializationStrategy = EAbilitySystemInitializationStrategy::Self;
+	AbilityReplicationMode = EGameplayEffectReplicationMode::Minimal;
+
+	CharacterAbilities = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilitySystemComponentName);
+	if (IsValid(CharacterAbilities))
+	{
+		CharacterAbilities->SetIsReplicated(bReplicates);
+		CharacterAbilities->SetReplicationMode(AbilityReplicationMode);	
+	}
+}
+
+void ANinjaGASCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsValid(CharacterAbilities))
+	{
+		// The ASC is created by this class. Initialize it on Begin Play.
+		SetupAbilitySystemComponent(this);	
+	}
 }
 
 UAbilitySystemComponent* ANinjaGASCharacter::GetAbilitySystemComponent() const
 {
-	if (CharacterAbilitiesPtr.IsValid() && CharacterAbilitiesPtr->IsValidLowLevelFast())
-	{
-		UAbilitySystemComponent* AbilitySystemComponent = CharacterAbilitiesPtr.Get(); 
-		return AbilitySystemComponent;
-	}
-	
-	return nullptr;	
+	return CharacterAbilities;
 }
 
 bool ANinjaGASCharacter::HasDefaultAbilitySettings() const
@@ -60,27 +71,16 @@ void ANinjaGASCharacter::GetDefaultGameplayAbilities(TArray<FDefaultGameplayAbil
 
 void ANinjaGASCharacter::SetupAbilitySystemComponent(AActor* AbilitySystemOwner)
 {
-	UAbilitySystemComponent* AbilityComponent = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(AbilitySystemOwner);
-	if (!IsValid(AbilityComponent))
+	if (IsValid(CharacterAbilities))
 	{
-		return;
+		CharacterAbilities->InitAbilityActorInfo(AbilitySystemOwner, this);
 	}
-
-	UNinjaGASAbilitySystemComponent* CustomAbilityComponent = Cast<UNinjaGASAbilitySystemComponent>(AbilityComponent);
-	if (!IsValid(CustomAbilityComponent))
-	{
-		return;
-	}
-	
-	CustomAbilityComponent->InitAbilityActorInfo(AbilitySystemOwner, this);
-	CharacterAbilitiesPtr = CustomAbilityComponent;	
 }
 
 void ANinjaGASCharacter::ClearAbilitySystemComponent()
 {
-	if (CharacterAbilitiesPtr.IsValid() && CharacterAbilitiesPtr->IsValidLowLevelFast())
+	if (IsValid(CharacterAbilities))
 	{
-		CharacterAbilitiesPtr->ClearActorInfo();
-		CharacterAbilitiesPtr.Reset();
+		CharacterAbilities->ClearActorInfo();
 	}	
 }

@@ -59,7 +59,7 @@ protected:
 	 * - Minimal	AI Actors in Multiplayer, Gameplay Effects are never replicated.
 	 *				Gameplay Tags and Cues will replicate to everyone.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category="Ability System")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability System")
 	EGameplayEffectReplicationMode AbilityReplicationMode;
 
 	/**
