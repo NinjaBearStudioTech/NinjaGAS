@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "Engine/StreamableManager.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
@@ -32,13 +33,14 @@ public:
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	virtual void ClearActorInfo() override;
 	virtual bool ShouldDoServerAbilityRPCBatch() const override;
+	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f);
 	// -- End Ability System Component implementation
 
 	// -- Begin Ability System Defaults implementation
-	virtual void GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const override;
-	virtual void GetDefaultGameplayEffects(TArray<FDefaultGameplayEffect>& OutDefaultEffects) const override;
-	virtual void GetDefaultGameplayAbilities(TArray<FDefaultGameplayAbility>& OutDefaultAbilities) const override;	
+	virtual UNinjaGASDataAsset* GetAbilityBundle() const override;
 	// -- End Ability System Defaults implementation
+
+	UAnimInstance* GetAnimInstanceFromActorInfo() const;
 	
 	/**
 	 * Grants a new effect to the owner.
@@ -100,8 +102,12 @@ protected:
 	 * Should only be called when the owner is authoritative. However, calling from
 	 * a client won't have any issues, but it won't do anything due to the internal check.
 	 */
-	void InitializeDefaults(AActor* NewAvatarActor);
+	void InitializeDefaults(const AActor* NewAvatarActor);
 
+	/**
+	 */
+	void InitializeFromBundle(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityBundle);
+	
 	/**
 	 * Initializes Attribute Sets provided by the interface.
 	 */
@@ -135,5 +141,7 @@ private:
 	/** All abilities we initialized by default. */
 	UPROPERTY()
 	TArray<FGameplayAbilitySpecHandle> DefaultAbilityHandles;
-	
+
+	/** Handle for the current default configuration. */
+	TSharedPtr<FStreamableHandle> AbilityBundleHandle;
 };

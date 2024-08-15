@@ -4,8 +4,8 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/Interfaces/AbilitySystemDefaultsInterface.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "NinjaGASCharacter.generated.h"
 
 class UNinjaGASDataAsset;
@@ -36,10 +36,7 @@ public:
 	
 	// -- Begin Ability System implementation
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	virtual bool HasDefaultAbilitySettings() const override;
-	virtual void GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const override;
-	virtual void GetDefaultGameplayEffects(TArray<FDefaultGameplayEffect>& OutDefaultEffects) const override;
-	virtual void GetDefaultGameplayAbilities(TArray<FDefaultGameplayAbility>& OutDefaultAbilities) const override;
+	virtual UNinjaGASDataAsset* GetAbilityBundle() const override;
 	// -- End Ability System implementation
 
 protected:
@@ -63,12 +60,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	EGameplayEffectReplicationMode AbilityReplicationMode;
 	
-	/** Informs if this character has an override for the settings. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System", meta = (InlineEditConditionToggle))
-	bool bOverridesAbilitySettings;
-	
 	/** Default configuration for the Ability System. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System", meta = (EditCondition = "bOverridesAbilitySettings"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	TObjectPtr<UNinjaGASDataAsset> DefaultAbilitySetup;
 
 	/**

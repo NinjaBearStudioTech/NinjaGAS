@@ -4,14 +4,12 @@
 #include "NinjaGASFunctionLibrary.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
-#include "Data/NinjaGASDataAsset.h"
 
 FName ANinjaGASCharacter::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
 
 ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bReplicates = true;
-	bOverridesAbilitySettings = false;
 	bInitializeAbilityComponentOnBeginPlay = true;
 	NetPriority = 2.f;
 	MinNetUpdateFrequency = 11.f;
@@ -75,33 +73,9 @@ UAbilitySystemComponent* ANinjaGASCharacter::GetAbilitySystemComponent() const
 	return CharacterAbilities;
 }
 
-bool ANinjaGASCharacter::HasDefaultAbilitySettings() const
+UNinjaGASDataAsset* ANinjaGASCharacter::GetAbilityBundle() const
 {
-	return bOverridesAbilitySettings;
-}
-
-void ANinjaGASCharacter::GetDefaultAttributeSets(TArray<FDefaultAttributeSet>& OutAttributeSets) const
-{
-	if (IsValid(DefaultAbilitySetup))
-	{
-		OutAttributeSets = DefaultAbilitySetup->DefaultAttributeSets;
-	}
-}
-
-void ANinjaGASCharacter::GetDefaultGameplayEffects(TArray<FDefaultGameplayEffect>& OutDefaultEffects) const
-{
-	if (IsValid(DefaultAbilitySetup))
-	{
-		OutDefaultEffects = DefaultAbilitySetup->DefaultGameplayEffects;
-	}
-}
-
-void ANinjaGASCharacter::GetDefaultGameplayAbilities(TArray<FDefaultGameplayAbility>& OutDefaultAbilities) const
-{
-	if (IsValid(DefaultAbilitySetup))
-	{
-		OutDefaultAbilities = DefaultAbilitySetup->DefaultGameplayAbilities;
-	}
+	return DefaultAbilitySetup;
 }
 
 void ANinjaGASCharacter::SetupAbilitySystemComponent(AActor* AbilitySystemOwner)

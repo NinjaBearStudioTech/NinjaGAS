@@ -21,15 +21,15 @@ public:
 	static FPrimaryAssetType AssetType;	
 
 	/** List of Attribute Sets assigned to an avatar. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "AttributeSet"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (AssetBundles = "Abilities", TitleProperty = "AttributeSetClass"))
 	TArray<FDefaultAttributeSet> DefaultAttributeSets;
 
 	/** List of Gameplay Effects assigned to an avatar. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "GameplayEffect"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (AssetBundles = "Abilities", TitleProperty = "GameplayEffectClass"))
 	TArray<FDefaultGameplayEffect> DefaultGameplayEffects;
 
 	/** List of Gameplay Abilities assigned to an avatar. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (TitleProperty = "GameplayAbility"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (AssetBundles = "Abilities", TitleProperty = "GameplayAbilityClass"))
 	TArray<FDefaultGameplayAbility> DefaultGameplayAbilities;
 
 	UNinjaGASDataAsset();
@@ -37,5 +37,5 @@ public:
 	// -- Begin Primary Data Asset implementation
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 	// -- End Primary Data Asset implementation
-	
+
 };

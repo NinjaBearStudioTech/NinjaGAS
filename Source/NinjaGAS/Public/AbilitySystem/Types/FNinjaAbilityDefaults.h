@@ -19,18 +19,18 @@ struct NINJAGAS_API FDefaultAttributeSet
 	
 	/** Attribute set class to grant. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
-	TSubclassOf<UAttributeSet> AttributeSet;
+	TSoftClassPtr<UAttributeSet> AttributeSetClass;
 
 	/** Data table with default attribute values. */
-	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
-	TObjectPtr<UDataTable> AttributeTable;
+	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set", meta = (RequiredAssetDataTags = "RowStructure=/Script/GameplayAbilities.AttributeMetaData"))
+	TSoftObjectPtr<UDataTable> AttributeTable;
 
 	FDefaultAttributeSet()
 	{
 	}
 	
-	FDefaultAttributeSet(const TSubclassOf<UAttributeSet>& AttributeSet, UDataTable* AttributeTable)
-		: AttributeSet(AttributeSet), AttributeTable(AttributeTable)
+	FDefaultAttributeSet(const TSubclassOf<UAttributeSet>& AttributeSet, const UDataTable* AttributeTable)
+		: AttributeSetClass(AttributeSet), AttributeTable(AttributeTable)
 	{
 	}
 };
@@ -46,7 +46,7 @@ struct NINJAGAS_API FDefaultGameplayEffect
 	
 	/** Gameplay Effect class to grant. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
-	TSubclassOf<UGameplayEffect> GameplayEffect;
+	TSoftClassPtr<UGameplayEffect> GameplayEffectClass;
 
 	/** Initial level. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
@@ -57,7 +57,7 @@ struct NINJAGAS_API FDefaultGameplayEffect
 	}
 	
 	FDefaultGameplayEffect(const TSubclassOf<UGameplayEffect>& GameplayEffect, const float Level = 1)
-		: GameplayEffect(GameplayEffect), Level(Level)
+		: GameplayEffectClass(GameplayEffect), Level(Level)
 	{
 	}
 };
@@ -73,7 +73,7 @@ struct NINJAGAS_API FDefaultGameplayAbility
 	
 	/** Gameplay Ability class to grant. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
-	TSubclassOf<UGameplayAbility> GameplayAbility;
+	TSoftClassPtr<UGameplayAbility> GameplayAbilityClass;
 
 	/** Initial level. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
@@ -88,7 +88,7 @@ struct NINJAGAS_API FDefaultGameplayAbility
 	}
 	
 	FDefaultGameplayAbility(const TSubclassOf<UGameplayAbility>& GameplayAbility, const int32 Level = 1, const float Input = INDEX_NONE)
-		: GameplayAbility(GameplayAbility), Level(Level), Input(Input)
+		: GameplayAbilityClass(GameplayAbility), Level(Level), Input(Input)
 	{
 	}
 };

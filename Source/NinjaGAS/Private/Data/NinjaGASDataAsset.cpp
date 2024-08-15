@@ -1,7 +1,7 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
 #include "Data/NinjaGASDataAsset.h"
 
-FPrimaryAssetType UNinjaGASDataAsset::AssetType = TEXT("AbilitiesDataAsset");
+FPrimaryAssetType UNinjaGASDataAsset::AssetType = TEXT("AbilityBundleData");
 
 UNinjaGASDataAsset::UNinjaGASDataAsset()
 {

@@ -29,7 +29,7 @@ void ANinjaGASPawn::PostInitProperties()
 	{
 		// Reinforce the Replication Mode in the ASC.
 		PawnAbilities->SetReplicationMode(AbilityReplicationMode);
-	}	
+	}
 }
 
 void ANinjaGASPawn::PreInitializeComponents()
