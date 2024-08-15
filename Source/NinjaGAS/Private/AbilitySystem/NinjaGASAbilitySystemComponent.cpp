@@ -12,7 +12,7 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
 
-	bShouldDoServerAbilityRPCBatch = true;
+	bEnableAbilityBatchRPC = true;
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -224,7 +224,7 @@ void UNinjaGASAbilitySystemComponent::ClearActorInfo()
 
 bool UNinjaGASAbilitySystemComponent::ShouldDoServerAbilityRPCBatch() const
 {
-	return bShouldDoServerAbilityRPCBatch;
+	return bEnableAbilityBatchRPC;
 }
 
 UAnimInstance* UNinjaGASAbilitySystemComponent::GetAnimInstanceFromActorInfo() const

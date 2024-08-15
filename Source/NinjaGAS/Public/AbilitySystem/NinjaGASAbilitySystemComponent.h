@@ -93,8 +93,8 @@ protected:
 	 * This means that multiple abilities activating together can be bundled in the same RPC.
 	 * Once enabled, abilities can be activated in a batch via the "TryBatchActivate" functions.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
-	bool bShouldDoServerAbilityRPCBatch;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System", DisplayName = "Enable Ability Batch RPCs")
+	bool bEnableAbilityBatchRPC;
 	
 	/**
 	 * Initializes default abilities, effects and attribute sets.
