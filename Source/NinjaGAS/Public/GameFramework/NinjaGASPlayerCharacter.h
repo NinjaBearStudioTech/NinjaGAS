@@ -39,9 +39,10 @@ protected:
 	
 	/**
 	 * Timer-friendly function to initialize features from the Player State.
+	 * By default, retrieves a copy of the ASC, but can be used for other components too.
 	 */
 	UFUNCTION()
-	void InitializeFromPlayerState();
+	virtual void InitializeFromPlayerState();
 	
 private:
 

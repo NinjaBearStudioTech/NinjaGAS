@@ -36,24 +36,20 @@ void ANinjaGASPlayerCharacter::OnRep_PlayerState()
 
 void ANinjaGASPlayerCharacter::InitializeFromPlayerState()
 {
-	const APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController))
+	APlayerState* MyState = GetPlayerState<APlayerState>();
+	if (!IsValid(MyState))
 	{
-		APlayerState* MyState = GetPlayerState<APlayerState>();
-		if (IsValid(MyState))
-		{
-			NetPriority = MyState->NetPriority;
-			MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
-			NetUpdateFrequency = MyState->NetUpdateFrequency;
-			
-			SetupAbilitySystemComponent(MyState);
-		}
-		else
-		{
-			// We'll keep trying on next tick until the Player State replicates.
-			GetWorldTimerManager().SetTimerForNextTick(this, &ThisClass::InitializeFromPlayerState);	
-		}
+		// We'll keep trying on next tick until the Player State replicates.
+		// Return fast so nothing else will be done for now (including subclasses).
+		//
+		GetWorldTimerManager().SetTimerForNextTick(this, &ThisClass::InitializeFromPlayerState);
+		return;
 	}
+	
+	NetPriority = MyState->NetPriority;
+	MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
+	NetUpdateFrequency = MyState->NetUpdateFrequency;
+	SetupAbilitySystemComponent(MyState);
 }
 
 UAbilitySystemComponent* ANinjaGASPlayerCharacter::GetAbilitySystemComponent() const
