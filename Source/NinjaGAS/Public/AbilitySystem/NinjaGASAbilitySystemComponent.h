@@ -9,6 +9,7 @@
 #include "NinjaGASAbilitySystemComponent.generated.h"
 
 class UNinjaGASDataAsset;
+class UAnimMontage;
 
 /**
  * Specialized version of the Ability System Component, supporting defaults and callbacks.
@@ -33,7 +34,7 @@ public:
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	virtual void ClearActorInfo() override;
 	virtual bool ShouldDoServerAbilityRPCBatch() const override;
-	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f);
+	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f) override;
 	// -- End Ability System Component implementation
 
 	// -- Begin Ability System Defaults implementation
@@ -105,6 +106,7 @@ protected:
 	void InitializeDefaults(const AActor* NewAvatarActor);
 
 	/**
+	 * Initializes the bundle that has been loaded (or was already loaded).
 	 */
 	void InitializeFromBundle(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityBundle);
 	
@@ -128,6 +130,8 @@ protected:
 	 */
 	virtual void ClearDefaults();
 
+	virtual void SetReplicatedMontageInfo(FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo, UAnimMontage* NewMontageToPlay, const FName& StartSectionName);
+	
 private:
 
 	/** Attribute sets we initialized and are keeping track. */

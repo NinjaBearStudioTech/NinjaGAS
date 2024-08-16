@@ -286,17 +286,7 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 			if (ShouldRecordMontageReplication())
 			{
 				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
-
-				// Those are static parameters, they are only set when the montage is played. They are not changed after that.
-				MutableRepAnimMontageInfo.AnimMontage = Montage;
-				MutableRepAnimMontageInfo.PlayInstanceId = (MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0);
-
-				MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-				if (MutableRepAnimMontageInfo.AnimMontage && StartSectionName != NAME_None)
-				{
-					// we add one so INDEX_NONE can be used in the on rep
-					MutableRepAnimMontageInfo.SectionIdToPlay = MutableRepAnimMontageInfo.AnimMontage->GetSectionIndex(StartSectionName) + 1;
-				}
+				SetReplicatedMontageInfo(MutableRepAnimMontageInfo, Montage, StartSectionName);
 
 				// Update parameters that change during Montage lifetime.
 				AnimMontage_UpdateReplicatedData();
@@ -324,6 +314,46 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 	}
 
 	return Duration;
+}
+
+void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo, UAnimMontage* NewMontageToPlay, const FName& StartSectionName)
+{
+	UAnimSequenceBase* Animation = NewMontageToPlay;
+	const uint8 PlayInstanceId = MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0;
+	const uint8 SectionIdToPlay = NewMontageToPlay->GetSectionIndex(StartSectionName) + 1;
+	
+#if ENGINE_MINOR_VERSION == 3
+	
+	MutableRepAnimMontageInfo.AnimMontage = Animation;
+	MutableRepAnimMontageInfo.PlayInstanceId = PlayInstanceId;
+
+	MutableRepAnimMontageInfo.SectionIdToPlay = 0;
+	if (MutableRepAnimMontageInfo.AnimMontage && StartSectionName != NAME_None)
+	{
+		MutableRepAnimMontageInfo.SectionIdToPlay = SectionIdToPlay;
+	}
+	
+#elif ENGINE_MINOR_VERSION > 3
+
+	if (NewMontageToPlay->IsDynamicMontage())
+	{
+		Animation = NewMontageToPlay->GetFirstAnimReference();
+
+		check(!NewMontageToPlay->SlotAnimTracks.IsEmpty());
+		MutableRepAnimMontageInfo.SlotName = NewMontageToPlay->SlotAnimTracks[0].SlotName;
+		MutableRepAnimMontageInfo.BlendOutTime = NewMontageToPlay->GetDefaultBlendInTime();		
+	}
+	
+	MutableRepAnimMontageInfo.Animation = Animation;
+	MutableRepAnimMontageInfo.PlayInstanceId = PlayInstanceId;
+
+	MutableRepAnimMontageInfo.SectionIdToPlay = 0;
+	if (MutableRepAnimMontageInfo.Animation && StartSectionName != NAME_None)
+	{
+		MutableRepAnimMontageInfo.SectionIdToPlay = SectionIdToPlay;
+	}
+	
+#endif
 }
 
 UNinjaGASDataAsset* UNinjaGASAbilitySystemComponent::GetAbilityBundle() const
@@ -367,3 +397,4 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
 		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount);
 }
+
