@@ -3,7 +3,6 @@
 
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
-#include "GameFramework/PlayerState.h"
 
 ANinjaGASPlayerCharacter::ANinjaGASPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.DoNotCreateDefaultSubobject(AbilitySystemComponentName))
@@ -32,24 +31,6 @@ void ANinjaGASPlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	InitializeFromPlayerState();
-}
-
-void ANinjaGASPlayerCharacter::InitializeFromPlayerState()
-{
-	APlayerState* MyState = GetPlayerState<APlayerState>();
-	if (!IsValid(MyState))
-	{
-		// We'll keep trying on next tick until the Player State replicates.
-		// Return fast so nothing else will be done for now (including subclasses).
-		//
-		GetWorldTimerManager().SetTimerForNextTick(this, &ThisClass::InitializeFromPlayerState);
-		return;
-	}
-	
-	NetPriority = MyState->NetPriority;
-	MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
-	NetUpdateFrequency = MyState->NetUpdateFrequency;
-	SetupAbilitySystemComponent(MyState);
 }
 
 UAbilitySystemComponent* ANinjaGASPlayerCharacter::GetAbilitySystemComponent() const

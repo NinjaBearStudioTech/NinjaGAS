@@ -79,6 +79,13 @@ protected:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ninja GAS|Character")
 	virtual void ClearAbilitySystemComponent();
+
+	/**
+	 * Timer-friendly function to initialize features from the Player State.
+	 * By default, retrieves a copy of the ASC, but can be used for other components too.
+	 */
+	UFUNCTION()
+	virtual void InitializeFromPlayerState();
 	
 private:
 

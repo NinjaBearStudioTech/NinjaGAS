@@ -4,6 +4,7 @@
 #include "NinjaGASFunctionLibrary.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
+#include "GameFramework/PlayerState.h"
 
 FName ANinjaGASCharacter::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
 
@@ -92,4 +93,22 @@ void ANinjaGASCharacter::ClearAbilitySystemComponent()
 	{
 		CharacterAbilities->ClearActorInfo();
 	}	
+}
+
+void ANinjaGASCharacter::InitializeFromPlayerState()
+{
+	APlayerState* MyState = GetPlayerState<APlayerState>();
+	if (!IsValid(MyState))
+	{
+		// We'll keep trying on next tick until the Player State replicates.
+		// Return fast so nothing else will be done for now (including subclasses).
+		//
+		GetWorldTimerManager().SetTimerForNextTick(this, &ThisClass::InitializeFromPlayerState);
+		return;
+	}
+	
+	NetPriority = MyState->NetPriority;
+	MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
+	NetUpdateFrequency = MyState->NetUpdateFrequency;
+	SetupAbilitySystemComponent(MyState);	
 }

@@ -37,13 +37,6 @@ protected:
 	virtual void ClearAbilitySystemComponent() override;
 	// -- End GAS Character implementation
 	
-	/**
-	 * Timer-friendly function to initialize features from the Player State.
-	 * By default, retrieves a copy of the ASC, but can be used for other components too.
-	 */
-	UFUNCTION()
-	virtual void InitializeFromPlayerState();
-	
 private:
 
 	/** Weak reference to the Character's Ability Component. */
