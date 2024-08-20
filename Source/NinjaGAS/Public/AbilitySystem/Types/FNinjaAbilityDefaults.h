@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "FNinjaAbilityDefaults.generated.h"
 
+class UDataTable;
 class UGameplayAbility;
 class UGameplayEffect;
 class UAttributeSet;
@@ -19,11 +20,11 @@ struct NINJAGAS_API FDefaultAttributeSet
 	
 	/** Attribute set class to grant. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
-	TSoftClassPtr<UAttributeSet> AttributeSetClass;
+	TSubclassOf<UAttributeSet> AttributeSetClass;
 
 	/** Data table with default attribute values. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set", meta = (RequiredAssetDataTags = "RowStructure=/Script/GameplayAbilities.AttributeMetaData"))
-	TSoftObjectPtr<UDataTable> AttributeTable;
+	TObjectPtr<const UDataTable> AttributeTable;
 
 	FDefaultAttributeSet()
 	{
@@ -46,7 +47,7 @@ struct NINJAGAS_API FDefaultGameplayEffect
 	
 	/** Gameplay Effect class to grant. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
-	TSoftClassPtr<UGameplayEffect> GameplayEffectClass;
+	TSubclassOf<UGameplayEffect> GameplayEffectClass;
 
 	/** Initial level. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
@@ -73,7 +74,7 @@ struct NINJAGAS_API FDefaultGameplayAbility
 	
 	/** Gameplay Ability class to grant. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
-	TSoftClassPtr<UGameplayAbility> GameplayAbilityClass;
+	TSubclassOf<UGameplayAbility> GameplayAbilityClass;
 
 	/** Initial level. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")

@@ -3,7 +3,6 @@
 
 #include "NinjaGASLog.h"
 #include "Data/NinjaGASDataAsset.h"
-#include "Engine/AssetManager.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Interfaces/BatchGameplayAbilityInterface.h"
 
@@ -53,12 +52,7 @@ void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatar
 	const UNinjaGASDataAsset* AbilityBundle = Defaults->GetAbilityBundle();
 	if (IsValid(AbilityBundle))
 	{
-		UAssetManager* AssetManager = UAssetManager::GetIfInitialized();
-		check(AssetManager);
-
-		const TArray<FName> Bundles = { "Abilities" };
-		const FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ThisClass::InitializeFromBundle, NewAvatarActor, AbilityBundle);
-		AbilityBundleHandle = AssetManager->LoadPrimaryAsset(AbilityBundle->GetPrimaryAssetId(), Bundles, Delegate, FStreamableManager::AsyncLoadHighPriority);
+		InitializeFromBundle(NewAvatarActor, AbilityBundle);
 	}
 }
 
@@ -92,8 +86,8 @@ void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefa
 {
 	for (const FDefaultAttributeSet& Entry : AttributeSets)
 	{
-		const TSubclassOf<UAttributeSet> AttributeSetClass = Entry.AttributeSetClass.Get();
-		const UDataTable* AttributeTable = Entry.AttributeTable.Get();
+		const TSubclassOf<UAttributeSet> AttributeSetClass = Entry.AttributeSetClass;
+		const UDataTable* AttributeTable = Entry.AttributeTable;
 		
 		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
 		if (GetSpawnedAttributes().Contains(NewAttributeSet) == false)
@@ -119,7 +113,7 @@ void UNinjaGASAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDe
 		
 		for (const FDefaultGameplayEffect& Entry : GameplayEffects)
 		{
-			const TSubclassOf<UGameplayEffect> GameplayEffectClass = Entry.GameplayEffectClass.Get();
+			const TSubclassOf<UGameplayEffect> GameplayEffectClass = Entry.GameplayEffectClass;
 			FActiveGameplayEffectHandle Handle = ApplyGameplayEffectClassToSelf(GameplayEffectClass, Entry.Level);
 			DefaultEffectHandles.Add(Handle);
 		}
@@ -136,7 +130,7 @@ void UNinjaGASAbilitySystemComponent::InitializeGameplayAbilities(const TArray<F
 		
 		for (const FDefaultGameplayAbility& Entry : GameplayAbilities)
 		{
-			const TSubclassOf<UGameplayAbility> GameplayAbilityClass = Entry.GameplayAbilityClass.Get();
+			const TSubclassOf<UGameplayAbility> GameplayAbilityClass = Entry.GameplayAbilityClass;
 			FGameplayAbilitySpecHandle Handle = GiveAbilityFromClass(GameplayAbilityClass, Entry.Level, Entry.Input);
 			DefaultAbilityHandles.Add(Handle);
 		}
@@ -363,8 +357,6 @@ UNinjaGASDataAsset* UNinjaGASAbilitySystemComponent::GetAbilityBundle() const
 
 void UNinjaGASAbilitySystemComponent::ClearDefaults()
 {
-	AbilityBundleHandle.Reset();
-	
 	if (!IsOwnerActorAuthoritative())
 	{
 		return;

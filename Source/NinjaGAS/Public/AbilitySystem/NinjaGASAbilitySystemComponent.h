@@ -149,6 +149,4 @@ private:
 	UPROPERTY()
 	TArray<FGameplayAbilitySpecHandle> DefaultAbilityHandles;
 
-	/** Handle for the current default configuration. */
-	TSharedPtr<FStreamableHandle> AbilityBundleHandle;
 };
