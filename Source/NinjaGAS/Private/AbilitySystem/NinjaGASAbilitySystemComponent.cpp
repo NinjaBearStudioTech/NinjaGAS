@@ -1,6 +1,8 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 
+#include "AbilitySystemGlobals.h"
+#include "GameplayCueManager.h"
 #include "NinjaGASLog.h"
 #include "Data/NinjaGASDataAsset.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
@@ -209,6 +211,24 @@ bool UNinjaGASAbilitySystemComponent::TryBatchActivateAbility(const FGameplayAbi
 	return bAbilityActivated;
 }
 
+void UNinjaGASAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
+{
+	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
+	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Executed, GameplayCueParameters);
+}
+
+void UNinjaGASAbilitySystemComponent::AddGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
+{
+	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
+	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::OnActive, GameplayCueParameters);
+	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::WhileActive, GameplayCueParameters);
+}
+
+void UNinjaGASAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
+{
+	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
+	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);
+}
 
 void UNinjaGASAbilitySystemComponent::ClearActorInfo()
 {

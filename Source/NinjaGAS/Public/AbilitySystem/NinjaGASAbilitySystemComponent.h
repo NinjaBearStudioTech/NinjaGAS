@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "Engine/StreamableManager.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
@@ -12,7 +11,19 @@ class UNinjaGASDataAsset;
 class UAnimMontage;
 
 /**
- * Specialized version of the Ability System Component, supporting defaults and callbacks.
+ * Specialized version of the Ability System Component.
+ *
+ * Includes many quality of life elements that are an aggregation of multiple common practices.
+ *
+ * - Data-driven configuration of default Gameplay Abilities.
+ * - Support for runtime IK Retarget setup, where the animation is driven by a hidden mesh.
+ * - Batch activation and local cues, as per Dan Tranek's GAS Compendium.
+ * - Lazy loading the ASC, as per Alvaro Jover-Alvarez (Vorixo)'s blog.
+ *
+ * Additional references:
+ * 
+ * - https://github.com/tranek/GASDocumentation
+ * -https://vorixo.github.io/devtricks/lazy-loading-asc/
  */
 UCLASS(ClassGroup=(NinjaGAS), meta=(BlueprintSpawnableComponent))
 class NINJAGAS_API UNinjaGASAbilitySystemComponent : public UAbilitySystemComponent, public IAbilitySystemDefaultsInterface
@@ -41,7 +52,14 @@ public:
 	virtual UNinjaGASDataAsset* GetAbilityBundle() const override;
 	// -- End Ability System Defaults implementation
 
-	UAnimInstance* GetAnimInstanceFromActorInfo() const;
+	/**
+	 * Obtains the Anim Instance from the Actor Info.
+	 *
+	 * Takes into consideration the pointer in the Actor Info, before calling the
+	 * Getter function that will always attempt to retrieve it from the mesh.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Ability System")
+	virtual UAnimInstance* GetAnimInstanceFromActorInfo() const;
 	
 	/**
 	 * Grants a new effect to the owner.
@@ -76,6 +94,35 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
 	virtual bool TryBatchActivateAbility(FGameplayAbilitySpecHandle AbilityHandle, bool bEndAbilityImmediately);
+
+	/**
+	 * Locally executes a <b>Static<b> Gameplay Cue.
+	 * 
+	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
+	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
+	void ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
+
+	/**
+	 * Locally adds an <b>Actor<b> Gameplay Cue.
+	 *
+	 * When adding this Gameplay Cue locally, make sure to also remove it locally.
+	 * 
+	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
+	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
+	 */	
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
+	void AddGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
+
+	/**
+	 * Locally removes an <b>Actor<b> Gameplay Cue.
+	 * 
+	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
+	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
+	 */		
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
+	void RemoveGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 	
 protected:
 
