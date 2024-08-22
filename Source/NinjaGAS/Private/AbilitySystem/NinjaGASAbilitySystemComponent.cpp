@@ -332,13 +332,12 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 
 void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo, UAnimMontage* NewMontageToPlay, const FName& StartSectionName)
 {
-	UAnimSequenceBase* Animation = NewMontageToPlay;
 	const uint8 PlayInstanceId = MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0;
 	const uint8 SectionIdToPlay = NewMontageToPlay->GetSectionIndex(StartSectionName) + 1;
 	
 #if ENGINE_MINOR_VERSION == 3
 	
-	MutableRepAnimMontageInfo.AnimMontage = Animation;
+	MutableRepAnimMontageInfo.AnimMontage = NewMontageToPlay;
 	MutableRepAnimMontageInfo.PlayInstanceId = PlayInstanceId;
 
 	MutableRepAnimMontageInfo.SectionIdToPlay = 0;
@@ -349,6 +348,7 @@ void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityR
 	
 #elif ENGINE_MINOR_VERSION > 3
 
+	UAnimSequenceBase* Animation = NewMontageToPlay;
 	if (NewMontageToPlay->IsDynamicMontage())
 	{
 		Animation = NewMontageToPlay->GetFirstAnimReference();
