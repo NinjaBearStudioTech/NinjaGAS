@@ -79,6 +79,19 @@ UNinjaGASDataAsset* ANinjaGASCharacter::GetAbilityBundle() const
 	return DefaultAbilitySetup;
 }
 
+void ANinjaGASCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	const UAbilitySystemComponent* MyAbilities = GetAbilitySystemComponent();
+	if (IsValid(MyAbilities))
+	{
+		MyAbilities->GetOwnedGameplayTags(TagContainer);
+	}
+	else
+	{
+		TagContainer = FGameplayTagContainer::EmptyContainer;
+	}
+}
+
 void ANinjaGASCharacter::SetupAbilitySystemComponent(AActor* AbilitySystemOwner)
 {
 	if (IsValid(CharacterAbilities))

@@ -15,7 +15,8 @@ class UNinjaGASAbilitySystemComponent;
  * Base Character class, with a pre-configured Ability System Component.
  */
 UCLASS(Abstract)
-class NINJAGAS_API ANinjaGASCharacter : public ACharacter, public IAbilitySystemInterface, public IAbilitySystemDefaultsInterface
+class NINJAGAS_API ANinjaGASCharacter : public ACharacter, public IAbilitySystemInterface, public IAbilitySystemDefaultsInterface,
+	public IGameplayTagAssetInterface
 {
 	
 	GENERATED_BODY()
@@ -39,6 +40,10 @@ public:
 	virtual UNinjaGASDataAsset* GetAbilityBundle() const override;
 	// -- End Ability System implementation
 
+	// -- Begin Gameplay Tags implementation
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	// -- End Gameplay Tags implementation
+	
 protected:
 
 	/** Allows subclasses to skip ASC initialization, most likely because they'll use the Player State. */
