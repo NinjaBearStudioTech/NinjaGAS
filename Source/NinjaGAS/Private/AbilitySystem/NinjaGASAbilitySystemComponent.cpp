@@ -80,7 +80,7 @@ void UNinjaGASAbilitySystemComponent::InitializeFromBundle(const AActor* NewAvat
 	const TArray<FDefaultGameplayAbility>& GameplayAbilities = AbilityBundle->DefaultGameplayAbilities;
 	InitializeGameplayAbilities(GameplayAbilities);
 
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults from %s: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults from %s: [ Attribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
 		*GetNameSafe(AbilityBundle), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num());	
 }
 
@@ -92,15 +92,20 @@ void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefa
 		const UDataTable* AttributeTable = Entry.AttributeTable;
 		
 		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
-		if (GetSpawnedAttributes().Contains(NewAttributeSet) == false)
+		if (GetSpawnedAttributes().Contains(NewAttributeSet))
+		{
+			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Discarding Attribute Set %s since it was already spawned."), *GetNameSafe(NewAttributeSet));
+		}
+		else
 		{
 			if (IsValid(AttributeTable))
 			{
-				NewAttributeSet->InitFromMetaDataTable(AttributeTable);	
+				NewAttributeSet->InitFromMetaDataTable(AttributeTable);
+				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
 			}
 
 			AddAttributeSetSubobject(NewAttributeSet);
-			AddedAttributes.Add(NewAttributeSet);
+			AddedAttributes.Add(NewAttributeSet);			
 		}
 	}		
 }
@@ -172,7 +177,7 @@ FGameplayAbilitySpecHandle UNinjaGASAbilitySystemComponent::GiveAbilityFromClass
 
 		UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Ability '%s' %s at level %d."),
 			*GetNameSafe(GetAvatarActor()), *GetNameSafe(AbilityClass),
-			Handle.IsValid() ? TEXT("sucessfully granted") : TEXT("failed to be granted"), Level);
+			Handle.IsValid() ? TEXT("successfully granted") : TEXT("failed to be granted"), Level);
 	}
 
 	return Handle;
@@ -406,7 +411,7 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 		++AttributeSetCount;
 	}
 
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Atribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Attribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
 		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount);
 }
 
