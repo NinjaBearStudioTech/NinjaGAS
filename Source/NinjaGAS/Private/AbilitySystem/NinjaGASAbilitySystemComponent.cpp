@@ -268,8 +268,23 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 	const FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, const float InPlayRate, const FName StartSectionName,
 	const float StartTimeSeconds)
 {
+	if (GEnableDefaultPlayMontage)
+	{
+		// Always useful to still allow the default flow, if there are some meaningful changes in the core system
+		// that were not yet reflect in this custom implementation. Can be enabled with CVar "GEnableDefaultPlayMontage".
+		//
+		return Super::PlayMontage(AnimatingAbility, ActivationInfo, Montage, InPlayRate, StartSectionName, StartTimeSeconds);
+	}
+	
 	float Duration = -1.f;
 
+	// This method was re-written just to ensure that the Animation Instance is retrieved from the Actor Info
+	// by default, but also, other scenarios can be supported. Biggest example being an IK Runtime Retarget.
+	//
+	// This virtual "GetAnimInstanceFromActorInfo" provides some flexibility on how the Anim Instance is
+	// retrieved. It can be extended in projects that should support IK Runtime Retargets and also traditional
+	// Anim Instances set in the Actor Info. 
+	//
 	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
 	if (AnimInstance && Montage)
 	{

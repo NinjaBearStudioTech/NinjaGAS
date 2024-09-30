@@ -25,10 +25,11 @@ public:
 	virtual void EndAbilityFromBatch_Implementation() override;
 	// -- End Batch Gameplay Ability implementation
 
-protected:
-
-	/** If enabled, the ability will passively activate, when the avatar is set. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
-	bool bIsPassiveAbility;
+	/**
+	 * Checks if this Gameplay Ability is passive, which is done via the passive tag.
+	 * Returns true if "Ability.Passive" is found in the Ability Tags container.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Gameplay Ability")
+	bool IsPassiveAbility() const;
 	
 };

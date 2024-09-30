@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
+#include "Components/PlayerStateComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "NinjaGASPlayerState.generated.h"
 
@@ -72,6 +73,19 @@ protected:
 	 */
 	virtual void DispatchResetPlayerStateComponents();
 
+	/**
+	 * Finds the equivalent Player State Component on the target.
+	 * 
+	 * Uses the static finder by class name, but if you have a different strategy, such as
+	 * deliberately pointing out the components, then you can override this method.
+	 */
+	virtual UPlayerStateComponent* GetPlayerStateComponent(APlayerState* TargetPlayerState, const UPlayerStateComponent* Reference) const;
+	
+	/**
+	 * Helper function to collect all player stat components.
+	 */
+	void ForEachPlayerStateComponent(const TFunctionRef<void(UPlayerStateComponent*)>& Function) const;
+	
 private:
 
 	/** Hard reference to the Ability System Component used by the player. */

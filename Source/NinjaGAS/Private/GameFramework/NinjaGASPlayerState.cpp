@@ -15,7 +15,13 @@ ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectIniti
 	NetUpdateFrequency = 66.f;
 	NetPriority = 3.f;
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Mixed;
-	
+
+	// Subtypes of the Ability System can be created using the Object Initializer.
+	// For different parents, they can also cancel this optional sub-object and create a different one.
+	//
+	// For Blueprints, replacing with a different child class is still viable, but cancelling the
+	// creation and creating an ASC using a different hierarchy is not supported.
+	//
 	AbilitySystemComponent = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilityComponentName);
 	if (IsValid(AbilitySystemComponent))
 	{
@@ -61,41 +67,58 @@ void ANinjaGASPlayerState::CopyProperties(APlayerState* TargetPlayerState)
 	DispatchCopyToPlayerStateComponents(TargetPlayerState);
 }
 
-void ANinjaGASPlayerState::DispatchCopyToPlayerStateComponents(APlayerState* TargetPlayerState)
-{
-	check(IsValid(TargetPlayerState));
-	
-	TInlineComponentArray<UPlayerStateComponent*> SourceStateComponents;
-	GetComponents(SourceStateComponents);
-
-	for (UPlayerStateComponent* SourceComponent : SourceStateComponents)
-	{
-		UClass* SourceClass = SourceComponent->GetClass();
-		FString SourceName = SourceComponent->GetName();
-		UObject* TargetObject = StaticFindObject(SourceClass, TargetPlayerState, *SourceName);
-
-		if (IsValid(TargetObject) && TargetObject->IsA<UPlayerStateComponent>())
-		{
-			UPlayerStateComponent* TargetComponent = Cast<UPlayerStateComponent>(TargetObject);
-			SourceComponent->CopyProperties(TargetComponent);
-		}
-	}
-}
-
 void ANinjaGASPlayerState::Reset()
 {
 	Super::Reset();
 	DispatchResetPlayerStateComponents();
 }
 
+void ANinjaGASPlayerState::DispatchCopyToPlayerStateComponents(APlayerState* TargetPlayerState)
+{
+	check(IsValid(TargetPlayerState));
+	
+	ForEachPlayerStateComponent([this, TargetPlayerState](UPlayerStateComponent* Component)
+	{
+		UPlayerStateComponent* TargetComponent = GetPlayerStateComponent(TargetPlayerState, Component);
+		if (IsValid(TargetComponent))
+		{
+			Component->CopyProperties(TargetComponent);
+		}
+	});
+}
+
 void ANinjaGASPlayerState::DispatchResetPlayerStateComponents()
 {
-	TArray<UPlayerStateComponent*> ModularComponents;
-	GetComponents(ModularComponents);
-
-	for (UPlayerStateComponent* Component : ModularComponents)
+	ForEachPlayerStateComponent([](UPlayerStateComponent* Component)
 	{
 		Component->Reset();
+	});
+}
+
+UPlayerStateComponent* ANinjaGASPlayerState::GetPlayerStateComponent(APlayerState* TargetPlayerState, const UPlayerStateComponent* Reference) const
+{
+	check(IsValid(TargetPlayerState));
+
+	UClass* SourceClass = Reference->GetClass();
+	const FString SourceName = Reference->GetName();
+
+	UObject* TargetObject = StaticFindObject(SourceClass, TargetPlayerState, *SourceName);
+	if (IsValid(TargetObject) && TargetObject->IsA<UPlayerStateComponent>())
+	{
+		return Cast<UPlayerStateComponent>(TargetObject);
+	}
+
+	return nullptr;
+}
+
+void ANinjaGASPlayerState::ForEachPlayerStateComponent(const TFunctionRef<void(UPlayerStateComponent*)>& Function) const
+{
+	TInlineComponentArray<UPlayerStateComponent*> Components;
+	GetComponents(Components);
+
+	for (UPlayerStateComponent* Component : Components)
+	{
+		Function(Component);
 	}
 }
 

@@ -11,6 +11,18 @@ class UNinjaGASDataAsset;
 class UAnimMontage;
 
 /**
+ * CVAR to control the "Play Montage" flow.
+ * Example: ninjagas.EnableDefaultPlayMontage true
+ */
+static bool GEnableDefaultPlayMontage = false;
+static FAutoConsoleVariableRef CVarEnableDefaultPlayMontage(
+	TEXT("ninjagas.EnableDefaultPlayMontage"),
+	GEnableDefaultPlayMontage,
+	TEXT("Enables or disables the PlayMontage default behavior."),
+	ECVF_Default
+);
+
+/**
  * Specialized version of the Ability System Component.
  *
  * Includes many quality of life elements that are an aggregation of multiple common practices.
@@ -23,7 +35,7 @@ class UAnimMontage;
  * Additional references:
  * 
  * - https://github.com/tranek/GASDocumentation
- * -https://vorixo.github.io/devtricks/lazy-loading-asc/
+ * - https://vorixo.github.io/devtricks/lazy-loading-asc/
  */
 UCLASS(ClassGroup=(NinjaGAS), meta=(BlueprintSpawnableComponent))
 class NINJAGAS_API UNinjaGASAbilitySystemComponent : public UAbilitySystemComponent, public IAbilitySystemDefaultsInterface

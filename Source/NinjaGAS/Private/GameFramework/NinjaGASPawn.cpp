@@ -43,7 +43,9 @@ void ANinjaGASPawn::BeginPlay()
 	Super::BeginPlay();
 
 	// This reinforces the ASC in this class, in case it was provided by a Game Feature.
-	// If found, initializes the instance with this pawn as the owner and avatar.
+	//
+	// Doing this is useful as it makes this class compatible with both a gameplay feature and the
+	// ASC interface, avoiding the component lookup.
 	//
 	PawnAbilities = UNinjaGASFunctionLibrary::GetCustomAbilitySystemComponentFromActor(this);
 	if (IsValid(PawnAbilities))

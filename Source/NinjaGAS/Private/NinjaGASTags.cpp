@@ -1,6 +1,7 @@
 ﻿// Ninja Bear Studio Inc., all rights reserved.
 #include "NinjaGASTags.h"
 
+UE_DEFINE_GAMEPLAY_TAG(Tag_GAS_Ability_Passive, "Ability.Passive");
 UE_DEFINE_GAMEPLAY_TAG(Tag_GAS_Activation_Fail_BlockedByTags, "Activation.Fail.BlockedByTags");
 UE_DEFINE_GAMEPLAY_TAG(Tag_GAS_Activation_Fail_CantAffordCost, "Activation.Fail.CantAffordCost");
 UE_DEFINE_GAMEPLAY_TAG(Tag_GAS_Activation_Fail_IsDead, "Activation.Fail.IsDead");

@@ -53,7 +53,9 @@ void ANinjaGASCharacter::BeginPlay()
 	if (bInitializeAbilityComponentOnBeginPlay)
 	{
 		// This reinforces the ASC in this class, in case it was provided by a Game Feature.
-		// If found, initializes the instance using the appropriate setup method.
+		//
+		// Doing this is useful as it makes this class compatible with both a gameplay feature and the
+		// ASC interface, avoiding the component lookup.
 		//
 		CharacterAbilities = UNinjaGASFunctionLibrary::GetCustomAbilitySystemComponentFromActor(this);
 		if (IsValid(CharacterAbilities))
