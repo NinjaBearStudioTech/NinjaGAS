@@ -21,7 +21,7 @@ struct FAttributeBlackboardMapping
 	FGameplayAttribute Attribute;
 	
 	/** Blackboard entry that will store the attribute's value. */
-	UPROPERTY(EditAnywhere, Category = "Token")    
+	UPROPERTY(EditAnywhere, Category = "Attribute")    
 	FBlackboardKeySelector AttributeValueKey;
 
 };

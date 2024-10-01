@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "AbilitySystem/Types/FNinjaAbilityDefaults.h"
 #include "Engine/DataAsset.h"
 #include "NinjaGASDataAsset.generated.h"
@@ -32,6 +33,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities", meta = (AssetBundles = "Abilities", TitleProperty = "GameplayAbilityClass"))
 	TArray<FDefaultGameplayAbility> DefaultGameplayAbilities;
 
+	/** Gameplay tags that are added by default to the owner's ASC. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	FGameplayTagContainer InitialGameplayTags;
+	
 	UNinjaGASDataAsset();
 
 	// -- Begin Primary Data Asset implementation

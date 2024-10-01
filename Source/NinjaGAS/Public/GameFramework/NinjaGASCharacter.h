@@ -37,7 +37,7 @@ public:
 	
 	// -- Begin Ability System implementation
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	virtual UNinjaGASDataAsset* GetAbilityBundle() const override;
+	virtual UNinjaGASDataAsset* GetAbilityData() const override;
 	// -- End Ability System implementation
 
 	// -- Begin Gameplay Tags implementation

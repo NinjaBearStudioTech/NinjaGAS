@@ -76,7 +76,7 @@ UAbilitySystemComponent* ANinjaGASCharacter::GetAbilitySystemComponent() const
 	return CharacterAbilities;
 }
 
-UNinjaGASDataAsset* ANinjaGASCharacter::GetAbilityBundle() const
+UNinjaGASDataAsset* ANinjaGASCharacter::GetAbilityData() const
 {
 	return DefaultAbilitySetup;
 }

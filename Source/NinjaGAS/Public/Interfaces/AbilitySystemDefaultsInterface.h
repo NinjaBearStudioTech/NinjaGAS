@@ -25,8 +25,8 @@ class NINJAGAS_API IAbilitySystemDefaultsInterface
 public:
 
 	/** Provides the default bundle for the avatar. */
-	virtual UNinjaGASDataAsset* GetAbilityBundle() const = 0;
+	virtual const UNinjaGASDataAsset* GetAbilityData() const = 0;
 	
 	/** Informs if an Ability Bundle is available. */
-	virtual bool HasAbilityBundle() const { return GetAbilityBundle() != nullptr; }
+	virtual bool HasAbilityData() const { return GetAbilityData() != nullptr; }
 };

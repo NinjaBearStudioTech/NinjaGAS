@@ -61,7 +61,7 @@ public:
 	// -- End Ability System Component implementation
 
 	// -- Begin Ability System Defaults implementation
-	virtual UNinjaGASDataAsset* GetAbilityBundle() const override;
+	virtual const UNinjaGASDataAsset* GetAbilityData() const override;
 	// -- End Ability System Defaults implementation
 
 	/**
@@ -145,7 +145,7 @@ protected:
 	 * If avatars override the default data asset, this one is fully ignored.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
-	TObjectPtr<UNinjaGASDataAsset> DefaultAbilitySetup;
+	TObjectPtr<const UNinjaGASDataAsset> DefaultAbilitySetup;
 
 	/**
 	 * Determines if the ASC can batch-activate abilities.
@@ -165,9 +165,9 @@ protected:
 	void InitializeDefaults(const AActor* NewAvatarActor);
 
 	/**
-	 * Initializes the bundle that has been loaded (or was already loaded).
+	 * Initializes Abilities from the provided Data Asset.
 	 */
-	void InitializeFromBundle(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityBundle);
+	void InitializeFromData(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityData);
 	
 	/**
 	 * Initializes Attribute Sets provided by the interface.

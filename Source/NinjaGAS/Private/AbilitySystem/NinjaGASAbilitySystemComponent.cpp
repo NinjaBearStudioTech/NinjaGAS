@@ -45,22 +45,23 @@ void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatar
 	}
 
 	const IAbilitySystemDefaultsInterface* Defaults = Cast<IAbilitySystemDefaultsInterface>(NewAvatarActor);
-	if (Defaults == nullptr || !Defaults->HasAbilityBundle())
+	if (Defaults == nullptr || !Defaults->HasAbilityData())
 	{
 		// Use the defaults provided by this class.
 		Defaults = Cast<IAbilitySystemDefaultsInterface>(this);
 	}
 
-	const UNinjaGASDataAsset* AbilityBundle = Defaults->GetAbilityBundle();
-	if (IsValid(AbilityBundle))
+	const UNinjaGASDataAsset* AbilityData = Defaults->GetAbilityData();
+	if (IsValid(AbilityData))
 	{
-		InitializeFromBundle(NewAvatarActor, AbilityBundle);
+		DefaultAbilitySetup = AbilityData;
+		InitializeFromData(NewAvatarActor, AbilityData);
 	}
 }
 
-void UNinjaGASAbilitySystemComponent::InitializeFromBundle(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityBundle)
+void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityData)
 {
-	if (!IsValid(AbilityBundle) || !IsOwnerActorAuthoritative())
+	if (!IsValid(AbilityData) || !IsOwnerActorAuthoritative())
 	{
 		return;
 	}
@@ -71,17 +72,23 @@ void UNinjaGASAbilitySystemComponent::InitializeFromBundle(const AActor* NewAvat
 		return;
 	}
 	
-	const TArray<FDefaultAttributeSet>& AttributeSets = AbilityBundle->DefaultAttributeSets;
+	const TArray<FDefaultAttributeSet>& AttributeSets = AbilityData->DefaultAttributeSets;
 	InitializeAttributeSets(AttributeSets);
 
-	const TArray<FDefaultGameplayEffect>& GameplayEffects = AbilityBundle->DefaultGameplayEffects;
+	const TArray<FDefaultGameplayEffect>& GameplayEffects = AbilityData->DefaultGameplayEffects;
 	InitializeGameplayEffects(GameplayEffects);
 
-	const TArray<FDefaultGameplayAbility>& GameplayAbilities = AbilityBundle->DefaultGameplayAbilities;
+	const TArray<FDefaultGameplayAbility>& GameplayAbilities = AbilityData->DefaultGameplayAbilities;
 	InitializeGameplayAbilities(GameplayAbilities);
 
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults from %s: [ Attribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
-		*GetNameSafe(AbilityBundle), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num());	
+	const FGameplayTagContainer& InitialGameplayTags = AbilityData->InitialGameplayTags; 
+	if (InitialGameplayTags.IsValid())
+	{
+		AddReplicatedLooseGameplayTags(InitialGameplayTags);
+	}
+	
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults from %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags %d ]."),
+		*GetNameSafe(AbilityData), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num(), InitialGameplayTags.Num());	
 }
 
 void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets)
@@ -390,7 +397,7 @@ void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityR
 #endif
 }
 
-UNinjaGASDataAsset* UNinjaGASAbilitySystemComponent::GetAbilityBundle() const
+const UNinjaGASDataAsset* UNinjaGASAbilitySystemComponent::GetAbilityData() const
 {
 	return DefaultAbilitySetup;
 }
@@ -400,6 +407,12 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 	if (!IsOwnerActorAuthoritative())
 	{
 		return;
+	}
+
+	const FGameplayTagContainer& InitialGameplayTags = DefaultAbilitySetup->InitialGameplayTags;
+	if (InitialGameplayTags.IsValid())
+	{
+		RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
 	}
 	
 	int32 AbilityHandleCount = 0;
@@ -426,7 +439,9 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 		++AttributeSetCount;
 	}
 
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Attribute Sets: %d, Gameplay Effects: %d, Gameplay Abilities: %d ]."),
-		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount);
+	// Revert to the original Ability Setup, since it may have been overriden by the interface.
+	DefaultAbilitySetup = GetDefault<UNinjaGASAbilitySystemComponent>(GetClass())->DefaultAbilitySetup;
+	
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags: %d ]."),
+		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount, InitialGameplayTags.Num());
 }
-
