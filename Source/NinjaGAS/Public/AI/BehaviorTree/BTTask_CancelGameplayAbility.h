@@ -2,8 +2,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AI/Types/EAgentAbilityActivationMode.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "Types/EAgentAbilityActivationMode.h"
 #include "BTTask_CancelGameplayAbility.generated.h"
 
 class UGameplayAbility;

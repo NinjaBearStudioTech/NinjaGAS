@@ -3,8 +3,8 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "AI/Types/EAgentAbilityActivationMode.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "Types/EAgentAbilityActivationMode.h"
 #include "BTTask_ActivateGameplayAbility.generated.h"
 
 class UAbilitySystemComponent;
