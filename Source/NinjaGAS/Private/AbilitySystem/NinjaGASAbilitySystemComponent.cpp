@@ -409,10 +409,14 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 		return;
 	}
 
-	const FGameplayTagContainer& InitialGameplayTags = DefaultAbilitySetup->InitialGameplayTags;
-	if (InitialGameplayTags.IsValid())
+	FGameplayTagContainer InitialGameplayTags = FGameplayTagContainer::EmptyContainer;  
+	if (IsValid(DefaultAbilitySetup))
 	{
-		RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
+		InitialGameplayTags = DefaultAbilitySetup->InitialGameplayTags;
+		if (InitialGameplayTags.IsValid())
+		{
+			RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
+		}	
 	}
 	
 	int32 AbilityHandleCount = 0;
