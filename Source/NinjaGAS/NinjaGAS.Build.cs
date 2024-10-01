@@ -10,12 +10,15 @@ public class NinjaGAS : ModuleRules
 		
 		PublicDependencyModuleNames.AddRange(new []
 		{
+			"AIModule",
 			"Core", 
 			"InputCore", 
+			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-			"GameplayAbilities",
-			"ModularGameplay"
+			"GameplayStateTreeModule",
+			"ModularGameplay",
+			"StateTreeModule"
 		});
 		
 		PrivateDependencyModuleNames.AddRange(new []
