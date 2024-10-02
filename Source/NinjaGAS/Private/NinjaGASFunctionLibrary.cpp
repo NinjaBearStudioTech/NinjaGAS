@@ -26,3 +26,33 @@ int32 UNinjaGASFunctionLibrary::SendGameplayEventToComponent(UAbilitySystemCompo
 	
 	return AbilityComponent->HandleGameplayEvent(EventTag, &EventData);	
 }
+
+void UNinjaGASFunctionLibrary::AddGameplayCueLocally(AActor* Target, const FGameplayTag GameplayCueTag,
+	const FGameplayCueParameters& GameplayCueParameters) const
+{
+	if (!GameplayCueTag.IsValid())
+	{
+		return;
+	}
+	
+	const UNinjaGASAbilitySystemComponent* AbilityComponent = GetCustomAbilitySystemComponentFromActor(Target);
+	if (IsValid(AbilityComponent))
+	{
+		AbilityComponent->AddGameplayCueLocally(GameplayCueTag, GameplayCueParameters);
+	}
+}
+
+void UNinjaGASFunctionLibrary::RemoveGameplayCueLocally(AActor* Target, const FGameplayTag GameplayCueTag,
+	const FGameplayCueParameters& GameplayCueParameters) const
+{
+	if (!GameplayCueTag.IsValid())
+	{
+		return;
+	}
+
+	const UNinjaGASAbilitySystemComponent* AbilityComponent = GetCustomAbilitySystemComponentFromActor(Target);
+	if (IsValid(AbilityComponent))
+	{
+		AbilityComponent->RemoveGameplayCueLocally(GameplayCueTag, GameplayCueParameters);
+	}	
+}

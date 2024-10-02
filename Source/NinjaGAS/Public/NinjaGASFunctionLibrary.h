@@ -48,5 +48,26 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ninja GAS", meta = (ReturnDisplayName = "Activations"))
 	static int32 SendGameplayEventToComponent(UAbilitySystemComponent* AbilityComponent, const FGameplayTag EventTag, const FGameplayEventData& EventData);
-	
+
+	/**
+	 * Locally adds an <b>Actor<b> Gameplay Cue.
+	 *
+	 * When adding this Gameplay Cue locally, make sure to also remove it locally.
+	 *
+	 * @param Target					Actor receiving the local cue.
+	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
+	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
+	 */	
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
+	void AddGameplayCueLocally(AActor* Target, UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
+
+	/**
+	 * Locally removes an <b>Actor<b> Gameplay Cue.
+	 *
+	 * @param Target					Actor having the local cue removed.
+	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
+	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
+	 */		
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
+	void RemoveGameplayCueLocally(AActor* Target, UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 };

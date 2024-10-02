@@ -225,14 +225,14 @@ void UNinjaGASAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag
 	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Executed, GameplayCueParameters);
 }
 
-void UNinjaGASAbilitySystemComponent::AddGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
+void UNinjaGASAbilitySystemComponent::AddGameplayCueLocally(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
 {
 	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
 	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::OnActive, GameplayCueParameters);
 	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::WhileActive, GameplayCueParameters);
 }
 
-void UNinjaGASAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
+void UNinjaGASAbilitySystemComponent::RemoveGameplayCueLocally(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
 {
 	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
 	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);

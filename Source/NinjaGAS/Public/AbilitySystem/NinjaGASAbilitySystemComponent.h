@@ -124,8 +124,8 @@ public:
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
 	 */	
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
-	void AddGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
+	void AddGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
 	 * Locally removes an <b>Actor<b> Gameplay Cue.
@@ -133,8 +133,8 @@ public:
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
 	 */		
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
-	void RemoveGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
+	void RemoveGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 	
 protected:
 
