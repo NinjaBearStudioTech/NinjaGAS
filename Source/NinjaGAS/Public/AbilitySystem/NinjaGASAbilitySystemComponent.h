@@ -196,6 +196,10 @@ protected:
 	
 private:
 
+	/** Actual ability setup used to initialize this ASC. */
+	UPROPERTY()
+	TObjectPtr<const UNinjaGASDataAsset> CurrentAbilitySetup;
+	
 	/** Attribute sets we initialized and are keeping track. */
 	UPROPERTY()
 	TArray<TObjectPtr<UAttributeSet>> AddedAttributes;

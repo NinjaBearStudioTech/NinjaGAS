@@ -14,6 +14,7 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	SetIsReplicatedByDefault(bIsReplicated);
 
 	bEnableAbilityBatchRPC = true;
+	CurrentAbilitySetup = nullptr;
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -21,12 +22,6 @@ void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor,
 	// Guard condition to ensure we should clear/init for this new Avatar Actor.
 	const bool bAvatarHasChanged = AbilityActorInfo && AbilityActorInfo->AvatarActor != InAvatarActor && InAvatarActor != nullptr;
 	
-	// Remove any defaults if we are changing an avatar from a previous valid one.
-	if (bAvatarHasChanged)
-	{
-		ClearDefaults();
-	}
-
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
 	// Apply the new defaults obtained from the owner's interface.
@@ -47,14 +42,15 @@ void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatar
 	const IAbilitySystemDefaultsInterface* Defaults = Cast<IAbilitySystemDefaultsInterface>(NewAvatarActor);
 	if (Defaults == nullptr || !Defaults->HasAbilityData())
 	{
-		// Use the defaults provided by this class.
+		// Use the defaults provided by this own class.
 		Defaults = Cast<IAbilitySystemDefaultsInterface>(this);
 	}
 
 	const UNinjaGASDataAsset* AbilityData = Defaults->GetAbilityData();
-	if (IsValid(AbilityData))
+	if (IsValid(AbilityData) && AbilityData != CurrentAbilitySetup)
 	{
-		DefaultAbilitySetup = AbilityData;
+		ClearDefaults();
+		CurrentAbilitySetup = AbilityData;
 		InitializeFromData(NewAvatarActor, AbilityData);
 	}
 }
@@ -410,9 +406,9 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 	}
 
 	FGameplayTagContainer InitialGameplayTags = FGameplayTagContainer::EmptyContainer;  
-	if (IsValid(DefaultAbilitySetup))
+	if (IsValid(CurrentAbilitySetup))
 	{
-		InitialGameplayTags = DefaultAbilitySetup->InitialGameplayTags;
+		InitialGameplayTags = CurrentAbilitySetup->InitialGameplayTags;
 		if (InitialGameplayTags.IsValid())
 		{
 			RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
@@ -443,8 +439,7 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 		++AttributeSetCount;
 	}
 
-	// Revert to the original Ability Setup, since it may have been overriden by the interface.
-	DefaultAbilitySetup = GetDefault<UNinjaGASAbilitySystemComponent>(GetClass())->DefaultAbilitySetup;
+	CurrentAbilitySetup = nullptr;
 	
 	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags: %d ]."),
 		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount, InitialGameplayTags.Num());
