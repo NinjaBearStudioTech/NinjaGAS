@@ -1,41 +1,46 @@
 ﻿{
-    "FileVersion": 3,
-    "Version": 1,
-    "VersionName": "1.0.0",
-    "FriendlyName": "NinjaGAS",
-    "Description": "Base configuration and utility for the Gameplay Ability System (GAS).",
-    "Category": "Gameplay",
-    "CreatedBy": "Ninja Bear Studio Inc.",
-    "CreatedByURL": "https://www.ninjabear.studio",
-    "DocsURL": "https://tech.ninjabear.studio/gas-overview.html",
-    "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/8704608bdf8444259abe22aca5b20ded",
-    "SupportURL": "https://discord.gg/mkB5cQmDws",
-    "CanContainContent": true,
-    "IsBetaVersion": false,
-    "IsExperimentalVersion": false,
-    "Installed": true,
-    "Modules": [
-        {
-            "Name": "NinjaGAS",
-            "Type": "Runtime",
-            "LoadingPhase": "Default",
-            "PlatformAllowList": [
-                "Win64"
-            ]
-        }
-    ],
-    "Plugins": [
-        {
-            "Name": "GameplayAbilities",
-            "Enabled": true
-        },
-        {
-            "Name": "ModelViewViewModel",
-            "Enabled": true
-        },
-        {
-            "Name": "ModularGameplay",
-            "Enabled": true
-        }
-    ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "NinjaGAS",
+	"Description": "Base configuration and utility for the Gameplay Ability System (GAS).",
+	"Category": "Gameplay",
+	"CreatedBy": "Ninja Bear Studio Inc.",
+	"CreatedByURL": "https://www.ninjabear.studio",
+	"DocsURL": "https://tech.ninjabear.studio/gas-overview.html",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/8704608bdf8444259abe22aca5b20ded",
+	"SupportURL": "https://discord.gg/mkB5cQmDws",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "NinjaGAS",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		},
+		{
+			"Name": "NinjaGASEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "ModelViewViewModel",
+			"Enabled": true
+		},
+		{
+			"Name": "ModularGameplay",
+			"Enabled": true
+		}
+	]
 }
