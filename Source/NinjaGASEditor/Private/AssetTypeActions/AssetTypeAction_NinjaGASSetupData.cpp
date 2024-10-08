@@ -6,7 +6,7 @@
 
 FText FAssetTypeAction_NinjaGASSetupData::GetName() const
 {
-    return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_GASSetupData_Title", "GAS Setup");
+    return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_GASSetupData_Title", "G.A.S. Setup");
 }
 
 uint32 FAssetTypeAction_NinjaGASSetupData::GetCategories()
