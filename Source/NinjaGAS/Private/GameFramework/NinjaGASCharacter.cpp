@@ -2,6 +2,7 @@
 #include "GameFramework/NinjaGASCharacter.h"
 
 #include "NinjaGASFunctionLibrary.h"
+#include "TimerManager.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/PlayerState.h"

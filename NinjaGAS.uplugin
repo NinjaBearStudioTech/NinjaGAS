@@ -37,6 +37,10 @@
 			"Name": "GameplayAbilities",
 			"Enabled": true
 		},
+        {
+            "Name": "GameplayStateTree",
+            "Enabled": true
+        },        
 		{
 			"Name": "ModelViewViewModel",
 			"Enabled": true
@@ -44,6 +48,10 @@
 		{
 			"Name": "ModularGameplay",
 			"Enabled": true
-		}
+		},
+        {
+            "Name": "StateTree",
+            "Enabled": true
+        }
 	]
 }

@@ -2,12 +2,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/SubclassOf.h"
 #include "FNinjaAbilityDefaults.generated.h"
 
+class UAttributeSet;
 class UDataTable;
 class UGameplayAbility;
 class UGameplayEffect;
-class UAttributeSet;
 
 /**
  * Default Attribute Set, with initialization data.

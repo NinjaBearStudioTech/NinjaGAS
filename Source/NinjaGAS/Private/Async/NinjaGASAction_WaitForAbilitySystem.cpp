@@ -3,7 +3,10 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "TimerManager.h"
+#include "UnrealEngine.h"
 #include "GameFramework/PlayerState.h"
+#include "UObject/Package.h"
 
 UNinjaGASAction_WaitForAbilitySystem* UNinjaGASAction_WaitForAbilitySystem::CreateAction(AActor* AbilityOwner, const float CheckInterval, const float MaxWait)
 {

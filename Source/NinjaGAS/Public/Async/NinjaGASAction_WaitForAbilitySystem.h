@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TimerManager.h"
 #include "Engine/CancellableAsyncAction.h"
 #include "NinjaGASAction_WaitForAbilitySystem.generated.h"
 

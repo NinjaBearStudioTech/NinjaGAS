@@ -4,6 +4,8 @@
 #include "AbilitySystemGlobals.h"
 #include "GameplayCueManager.h"
 #include "NinjaGASLog.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "Data/NinjaGASDataAsset.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Interfaces/BatchGameplayAbilityInterface.h"

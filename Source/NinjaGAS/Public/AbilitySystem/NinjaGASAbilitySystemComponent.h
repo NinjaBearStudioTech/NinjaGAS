@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
 
