@@ -8,7 +8,7 @@
 	"CreatedBy": "Ninja Bear Studio Inc.",
 	"CreatedByURL": "https://www.ninjabear.studio",
 	"DocsURL": "https://tech.ninjabear.studio/gas-overview.html",
-	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/8704608bdf8444259abe22aca5b20ded",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5200fc7c-2cb4-4a2e-a204-8200cebab05d",
 	"SupportURL": "https://discord.gg/mkB5cQmDws",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
@@ -20,7 +20,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
-				"Win64"
+                "Win64", "Linux"
 			]
 		},
 		{
@@ -28,7 +28,7 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default",
             "PlatformAllowList": [
-                "Win64"
+                "Win64", "Linux"
             ]            
 		}
 	],

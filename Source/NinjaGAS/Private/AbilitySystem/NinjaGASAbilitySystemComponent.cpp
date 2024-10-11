@@ -221,6 +221,11 @@ bool UNinjaGASAbilitySystemComponent::TryBatchActivateAbility(const FGameplayAbi
 	return bAbilityActivated;
 }
 
+void UNinjaGASAbilitySystemComponent::CancelAbilitiesByTags(const FGameplayTagContainer AbilityTags, const FGameplayTagContainer CancelFilterTags)
+{
+	CancelAbilities(&AbilityTags, &CancelFilterTags);
+}
+
 void UNinjaGASAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const
 {
 	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();

@@ -109,6 +109,15 @@ public:
 	virtual bool TryBatchActivateAbility(FGameplayAbilitySpecHandle AbilityHandle, bool bEndAbilityImmediately);
 
 	/**
+	 * Cancels Gameplay Abilities by their matching tags.
+	 *
+	 * @param AbilityTags		Gameplay Tags used to target abilities to cancel.
+	 * @param CancelFilterTags	A filter that excludes an ability from being cancelled.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	virtual void CancelAbilitiesByTags(FGameplayTagContainer AbilityTags, FGameplayTagContainer CancelFilterTags);
+	
+	/**
 	 * Locally executes a <b>Static<b> Gameplay Cue.
 	 * 
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
