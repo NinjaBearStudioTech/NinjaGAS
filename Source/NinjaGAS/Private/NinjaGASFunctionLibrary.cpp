@@ -1,4 +1,4 @@
-﻿// Ninja Bear Studio Inc., all rights reserved.
+﻿// Ninja Bear Studio Inc. 2024, all rights reserved.
 #include "NinjaGASFunctionLibrary.h"
 
 #include "AbilitySystemComponent.h"

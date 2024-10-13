@@ -1,5 +1,4 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
-
+﻿// Ninja Bear Studio Inc. 2024, all rights reserved.
 #pragma once
 
 #include "CoreMinimal.h"
