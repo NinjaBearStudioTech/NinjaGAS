@@ -38,6 +38,9 @@ public:
 
 protected:
 
+	/** Allows subclasses to skip ASC initialization, most likely because they'll use the Player State. */
+	bool bInitializeAbilityComponentOnBeginPlay;
+	
 	/**
 	 * Sets how the Ability System component will replicate data to clients.
 	 *
@@ -54,6 +57,29 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	EGameplayEffectReplicationMode AbilityReplicationMode;
 
+	/**
+	 * Initializes the ability system component using the source as an avatar.
+	 *
+	 * @param AbilitySystemOwner
+	 *		Actor that owns the Ability System Component. It may be the same pawn
+	 *		or an external source such as the Player State.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ninja GAS|Pawn")
+	virtual void SetupAbilitySystemComponent(AActor* AbilitySystemOwner);
+	
+	/**
+	 * Clears the ability system component, most likely due to the character being destroyed.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ninja GAS|Pawn")
+	virtual void ClearAbilitySystemComponent();
+
+	/**
+	 * Timer-friendly function to initialize features from the Player State.
+	 * By default, retrieves a copy of the ASC, but can be used for other components too.
+	 */
+	UFUNCTION()
+	virtual void InitializeFromPlayerState();
+	
 private:
 
 	/** The Ability System Component managed by this pawn class. */
