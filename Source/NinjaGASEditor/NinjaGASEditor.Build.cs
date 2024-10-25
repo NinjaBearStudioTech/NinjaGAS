@@ -22,6 +22,7 @@ public class NinjaGASEditor : ModuleRules
 	            "AssetTools",
                 "CoreUObject",
                 "Engine",
+                "GameProjectGeneration",
                 "Slate",
                 "SlateCore",
                 "UnrealEd"
