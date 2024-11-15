@@ -4,12 +4,12 @@
 #include "GameProjectUtils.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
-
 void SNewNinjaAttributeSetDialog::Construct(const FArguments& InArgs)
 {
 	CollectAvailableModules();
 	SetDefaultValues(InArgs);
 }
+END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SNewNinjaAttributeSetDialog::CollectAvailableModules()
 {

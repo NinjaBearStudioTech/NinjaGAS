@@ -2,9 +2,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AddToProjectConfig.h"
 #include "ModuleDescriptor.h"
 #include "AbilitySystem/NinjaGASAttributeSet.h"
-#include "Editor/GameProjectGeneration/Public/AddToProjectConfig.h"
 #include "UObject/Object.h"
 
 class UNinjaGASAttributeSet;
