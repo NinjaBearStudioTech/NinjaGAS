@@ -2,9 +2,11 @@
 #include "GameFramework/NinjaGASPawn.h"
 
 #include "NinjaGASFunctionLibrary.h"
+#include "TimerManager.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/PlayerState.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 FName ANinjaGASPawn::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
 
@@ -13,9 +15,15 @@ ANinjaGASPawn::ANinjaGASPawn(const FObjectInitializer& ObjectInitializer) : Supe
 	bReplicates = true;
 	bInitializeAbilityComponentOnBeginPlay = true;
 	NetPriority = 2.f;
-	MinNetUpdateFrequency = 11.f;
-	NetUpdateFrequency = 33.f;	
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Minimal;
+	
+#if ENGINE_MINOR_VERSION < 5
+	MinNetUpdateFrequency = 11.f;
+	NetUpdateFrequency = 33.f;
+#else
+	SetMinNetUpdateFrequency(11.f);
+	SetNetUpdateFrequency(33.f);
+#endif
 
 	PawnAbilities = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilitySystemComponentName);
 	if (IsValid(PawnAbilities))
@@ -101,7 +109,17 @@ void ANinjaGASPawn::InitializeFromPlayerState()
 	}
 	
 	NetPriority = MyState->NetPriority;
+
+#if ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
 	NetUpdateFrequency = MyState->NetUpdateFrequency;
+#else
+	const float NewMinNetUpdateFrequency = MyState->GetMinNetUpdateFrequency();
+	SetMinNetUpdateFrequency(NewMinNetUpdateFrequency);
+
+	const float NewNetUpdateFrequency = MyState->GetNetUpdateFrequency(); 
+	SetNetUpdateFrequency(NewNetUpdateFrequency); 
+#endif
+
 	SetupAbilitySystemComponent(MyState);	
 }

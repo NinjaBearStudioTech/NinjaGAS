@@ -5,14 +5,22 @@
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Components/PlayerStateComponent.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 FName ANinjaGASPlayerState::AbilityComponentName = TEXT("AbilitySystem");
 
 ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bReplicates = true;
+	
+#if ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = 33.f;
 	NetUpdateFrequency = 66.f;
+#else
+	SetMinNetUpdateFrequency(33.f);
+	SetNetUpdateFrequency(66.f);
+#endif
+	
 	NetPriority = 3.f;
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Mixed;
 

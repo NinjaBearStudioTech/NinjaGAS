@@ -3,10 +3,19 @@
 
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 ANinjaGASPlayerPawn::ANinjaGASPlayerPawn(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.DoNotCreateDefaultSubobject(AbilitySystemComponentName))
 {
+#if ENGINE_MINOR_VERSION < 5
+	MinNetUpdateFrequency = 33.f;
+	NetUpdateFrequency = 66.f;
+#else
+	SetMinNetUpdateFrequency(33.f);
+	SetNetUpdateFrequency(66.f);
+#endif
+	
 	bInitializeAbilityComponentOnBeginPlay = false;
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Mixed;	
 }

@@ -3,14 +3,23 @@
 
 #include "NinjaGASFunctionLibrary.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
-#include "Components/GameFrameworkComponentManager.h"
+#include <Components/GameFrameworkComponentManager.h>
+#include "Runtime/Launch/Resources/Version.h"
 
 FName ANinjaGASActor::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
 
 ANinjaGASActor::ANinjaGASActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bReplicates = true;
+
+#if ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = 11.f;
+	NetUpdateFrequency = 33.f;
+#else
+	SetMinNetUpdateFrequency(11.f);
+	SetNetUpdateFrequency(33.f);
+#endif
+	
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Minimal;
 
 	ActorAbilities = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilitySystemComponentName);

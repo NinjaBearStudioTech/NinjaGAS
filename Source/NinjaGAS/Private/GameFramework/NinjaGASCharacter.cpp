@@ -6,6 +6,7 @@
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/PlayerState.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 FName ANinjaGASCharacter::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
 
@@ -14,8 +15,15 @@ ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializ
 	bReplicates = true;
 	bInitializeAbilityComponentOnBeginPlay = true;
 	NetPriority = 2.f;
+	
+#if ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = 11.f;
 	NetUpdateFrequency = 33.f;
+#else
+	SetMinNetUpdateFrequency(11.f);
+	SetNetUpdateFrequency(33.f);
+#endif
+	
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AbilityReplicationMode = EGameplayEffectReplicationMode::Minimal;
 
@@ -124,7 +132,17 @@ void ANinjaGASCharacter::InitializeFromPlayerState()
 	}
 	
 	NetPriority = MyState->NetPriority;
+	
+#if ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
 	NetUpdateFrequency = MyState->NetUpdateFrequency;
+#else
+	const float NewMinNetUpdateFrequency = MyState->GetMinNetUpdateFrequency();
+	SetMinNetUpdateFrequency(NewMinNetUpdateFrequency);
+
+	const float NewNetUpdateFrequency = MyState->GetNetUpdateFrequency(); 
+	SetNetUpdateFrequency(NewNetUpdateFrequency); 
+#endif
+	
 	SetupAbilitySystemComponent(MyState);	
 }
