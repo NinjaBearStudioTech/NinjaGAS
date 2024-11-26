@@ -3,10 +3,15 @@
 
 #include "AbilitySystemComponent.h"
 #include "NinjaGASTags.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 bool UNinjaGASGameplayAbility::IsPassiveAbility() const
 {
+#if ENGINE_MINOR_VERSION < 5
 	return AbilityTags.HasTagExact(Tag_GAS_Ability_Passive);
+#else
+	return GetAssetTags().HasTagExact(Tag_GAS_Ability_Passive);
+#endif
 }
 
 void UNinjaGASGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
