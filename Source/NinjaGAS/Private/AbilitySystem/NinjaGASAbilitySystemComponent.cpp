@@ -94,15 +94,20 @@ void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefa
 	for (const FDefaultAttributeSet& Entry : AttributeSets)
 	{
 		const TSubclassOf<UAttributeSet> AttributeSetClass = Entry.AttributeSetClass;
-		const UDataTable* AttributeTable = Entry.AttributeTable;
+		if (!IsValid(AttributeSetClass))
+		{
+			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Attribute Set Entry is missing a valid Attribute Set class!"));
+			continue;	
+		}
 		
 		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
 		if (GetSpawnedAttributes().Contains(NewAttributeSet))
 		{
-			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Discarding Attribute Set %s since it was already spawned."), *GetNameSafe(NewAttributeSet));
+			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Discarding Attribute Set %s since it was already spawned!"), *GetNameSafe(NewAttributeSet));
 		}
 		else
 		{
+			const UDataTable* AttributeTable = Entry.AttributeTable;
 			if (IsValid(AttributeTable))
 			{
 				NewAttributeSet->InitFromMetaDataTable(AttributeTable);
