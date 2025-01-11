@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AttributeSet.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Types/FNinjaAbilityDefaults.h"
 #include "Engine/DataAsset.h"

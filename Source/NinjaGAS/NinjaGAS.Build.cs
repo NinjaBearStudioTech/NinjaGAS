@@ -18,6 +18,7 @@ public class NinjaGAS : ModuleRules
 			"GameplayTasks",
 			"GameplayStateTreeModule",
 			"ModularGameplay",
+			"NetCore",
 			"StateTreeModule"
 		});
 		

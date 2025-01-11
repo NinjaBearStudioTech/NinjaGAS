@@ -145,6 +145,22 @@ public:
 	 */		
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
 	void RemoveGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
+
+	/**
+	 * Sets a base attribute value, after a deferred/lazy initialization.
+	 *
+	 * @param Attribute		Attribute being updated.
+	 * @param NewValue		New float value to be set.
+	 */
+	void DeferredSetBaseAttributeValueFromReplication(const FGameplayAttribute& Attribute, float NewValue);
+
+	/**
+	 * Sets a base attribute value, after a deferred/lazy initialization.
+	 *
+	 * @param Attribute		Attribute being updated.
+	 * @param NewValue		New attribute data value to be applied.
+	 */	
+	void DeferredSetBaseAttributeValueFromReplication(const FGameplayAttribute& Attribute, const FGameplayAttributeData& NewValue);
 	
 protected:
 

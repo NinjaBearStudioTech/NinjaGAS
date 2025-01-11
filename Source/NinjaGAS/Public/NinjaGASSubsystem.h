@@ -19,5 +19,5 @@ public:
 	// -- Begin Subsystem implementation
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	// -- End Subsystem implementation
-	
+
 };
