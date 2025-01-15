@@ -257,6 +257,40 @@ void UNinjaGASAbilitySystemComponent::ClearActorInfo()
 	Super::ClearActorInfo();
 }
 
+void UNinjaGASAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputPressed(Spec);
+
+	// As done by Lyra, use a replicated event instead of replicating the input directly.
+	if (Spec.IsActive())
+	{
+		TArray<UGameplayAbility*> Instances = Spec.GetAbilityInstances();
+
+		const FGameplayAbilityActivationInfo& ActivationInfo = Instances.Last()->GetCurrentActivationInfoRef();
+		const FPredictionKey OriginalPredictionKey = ActivationInfo.GetActivationPredictionKey();
+
+		// Invoke the replication event, providing a valid Prediction Key.
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle, OriginalPredictionKey);
+	}
+}
+
+void UNinjaGASAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputReleased(Spec);
+
+	// As done by Lyra, use a replicated event instead of replicating the input directly.
+	if (Spec.IsActive())
+	{
+		TArray<UGameplayAbility*> Instances = Spec.GetAbilityInstances();
+		
+		const FGameplayAbilityActivationInfo& ActivationInfo = Instances.Last()->GetCurrentActivationInfoRef();
+		const FPredictionKey OriginalPredictionKey = ActivationInfo.GetActivationPredictionKey();
+
+		// Invoke the replication event, providing a valid Prediction Key.
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, OriginalPredictionKey);
+	}
+}
+
 bool UNinjaGASAbilitySystemComponent::ShouldDoServerAbilityRPCBatch() const
 {
 	return bEnableAbilityBatchRPC;
