@@ -7,6 +7,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Class.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 UBTTask_ActivateGameplayAbility::UBTTask_ActivateGameplayAbility()
 {
