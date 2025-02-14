@@ -133,7 +133,10 @@ void UNinjaGASAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDe
 		{
 			const TSubclassOf<UGameplayEffect> GameplayEffectClass = Entry.GameplayEffectClass;
 			FActiveGameplayEffectHandle Handle = ApplyGameplayEffectClassToSelf(GameplayEffectClass, Entry.Level);
-			DefaultEffectHandles.Add(Handle);
+			if (Handle.IsValid() && Handle.WasSuccessfullyApplied())
+			{
+				DefaultEffectHandles.Add(Handle);	
+			}
 		}
 	}
 }
@@ -150,7 +153,10 @@ void UNinjaGASAbilitySystemComponent::InitializeGameplayAbilities(const TArray<F
 		{
 			const TSubclassOf<UGameplayAbility> GameplayAbilityClass = Entry.GameplayAbilityClass;
 			FGameplayAbilitySpecHandle Handle = GiveAbilityFromClass(GameplayAbilityClass, Entry.Level, Entry.Input);
-			DefaultAbilityHandles.Add(Handle);
+			if (Handle.IsValid())
+			{
+				DefaultAbilityHandles.Add(Handle);	
+			}
 		}
 	}
 }

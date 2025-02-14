@@ -7,7 +7,7 @@
 #include "Components/PlayerStateComponent.h"
 #include "Runtime/Launch/Resources/Version.h"
 
-FName ANinjaGASPlayerState::AbilityComponentName = TEXT("AbilitySystem");
+FName ANinjaGASPlayerState::AbilitySystemComponentName = TEXT("AbilitySystem");
 
 ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -30,7 +30,7 @@ ANinjaGASPlayerState::ANinjaGASPlayerState(const FObjectInitializer& ObjectIniti
 	// For Blueprints, replacing with a different child class is still viable, but cancelling the
 	// creation and creating an ASC using a different hierarchy is not supported.
 	//
-	AbilitySystemComponent = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilityComponentName);
+	AbilitySystemComponent = CreateOptionalDefaultSubobject<UNinjaGASAbilitySystemComponent>(AbilitySystemComponentName);
 	if (IsValid(AbilitySystemComponent))
 	{
 		AbilitySystemComponent->SetIsReplicated(true);

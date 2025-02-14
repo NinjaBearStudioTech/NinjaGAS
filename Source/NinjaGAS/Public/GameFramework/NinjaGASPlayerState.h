@@ -13,7 +13,7 @@ class UAbilitySystemComponent;
 /**
  * Player State that contains a Gameplay Ability System.
  *
- * It allows subclasses to define their own Ability System Component type using the "AbilityComponentName",
+ * It allows subclasses to define their own Ability System Component type using the "AbilitySystemComponentName",
  * or even fully disabling the component's creation, in case it will be provided via Modular Gameplay.
  *
  * This Player state is also compatible with Modular Gameplay Features, so it will broadcast the proper
@@ -28,7 +28,7 @@ class NINJAGAS_API ANinjaGASPlayerState : public APlayerState, public IAbilitySy
 public:
 
 	/** Name used to create the Ability Component. Can be used to overwrite the base class. */
-	static FName AbilityComponentName;
+	static FName AbilitySystemComponentName;
 
 	ANinjaGASPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
