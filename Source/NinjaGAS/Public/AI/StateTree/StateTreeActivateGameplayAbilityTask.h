@@ -85,5 +85,11 @@ protected:
 	 * @return						True if this is the same ability that this task activated.
 	 */
 	virtual bool CheckAbilityThatHasEnded(const FInstanceDataType* InstanceData, const FAbilityEndedData& AbilityEndedData) const;
+
+#if WITH_EDITOR
+public:
 	
+	virtual FText GetDescription(const FGuid& ID, FStateTreeDataView InstanceDataView, const IStateTreeBindingLookup& BindingLookup, EStateTreeNodeFormatting Formatting = EStateTreeNodeFormatting::Text) const override;
+	
+#endif
 };

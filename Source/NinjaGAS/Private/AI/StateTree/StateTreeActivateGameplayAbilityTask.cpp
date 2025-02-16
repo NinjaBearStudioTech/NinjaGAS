@@ -134,3 +134,31 @@ void FStateTreeActivateGameplayAbilityTask::ExitState(FStateTreeExecutionContext
 		}
 	}
 }
+
+#if WITH_EDITOR
+FText FStateTreeActivateGameplayAbilityTask::GetDescription(const FGuid& ID, const FStateTreeDataView InstanceDataView,
+	const IStateTreeBindingLookup& BindingLookup, const EStateTreeNodeFormatting Formatting) const
+{
+	const FInstanceDataType* InstanceData = InstanceDataView.GetPtr<FInstanceDataType>();
+	check(InstanceData);
+
+	FText Value = FText::GetEmpty();
+
+	if (InstanceData->AbilityActivationTags.IsValid())
+	{
+		Value = FText::Format(NSLOCTEXT("StateTree", "AbilityTags", "{0}"),
+			FText::FromString(InstanceData->AbilityActivationTags.ToStringSimple()));
+	}
+	else
+	{
+		Value = NSLOCTEXT("StateTree", "EmptyTags", "Empty Tags");
+	}
+	
+	const FText Format = (Formatting == RichText)
+		? NSLOCTEXT("StateTree", "AbilityRich", "<b>Activate Ability</> {AbilityTags}")
+		: NSLOCTEXT("StateTree", "Ability", "Activate Ability {AbilityTags}");
+
+	return FText::FormatNamed(Format,
+		TEXT("AbilityTags"), Value);	
+}
+#endif
