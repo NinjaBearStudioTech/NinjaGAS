@@ -121,7 +121,16 @@ void FStateTreeActivateGameplayAbilityTask::ExitState(FStateTreeExecutionContext
 				TEXT("FStateTreeActivateGameplayAbilityTask forcing cancellation of ability activated by %s."),
 				*InstanceData.AbilityActivationTags.ToStringSimple());
 
-			AbilityComponent->CancelAbilityHandle(InstanceData.AbilitySpec);
+			if (InstanceData.AbilitySpec.IsValid())
+			{
+				// Unlikely to have a valid handle here. But if we do, then use it.
+				AbilityComponent->CancelAbilityHandle(InstanceData.AbilitySpec);	
+			}
+			else
+			{
+				const FGameplayTagContainer AbilityThatEndedTags = InstanceData.AbilityActivationTags;
+				AbilityComponent->CancelAbilities(&AbilityThatEndedTags);
+			}
 		}
 	}
 }
