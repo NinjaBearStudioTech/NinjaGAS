@@ -32,7 +32,7 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 
 	/** If set to true, cancels the ability when the state changes. */
 	UPROPERTY(EditAnywhere, Category = Parameter)
-	bool bShouldEndAbilityWhenStateFinishes = true;
+	bool bShouldCancelAbilityWhenStateFinishes = true;
 	
 	/** Spec for the Gameplay Ability that has Ended. */
 	UPROPERTY(EditAnywhere, Category = Output)

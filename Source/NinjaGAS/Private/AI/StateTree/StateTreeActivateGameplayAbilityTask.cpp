@@ -35,7 +35,7 @@ EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::ActivateAbility(const
 		UE_VLOG(Context.GetOwner(), LogStateTree, Error, TEXT("FStateTreeActivateGameplayAbilityTask failed since an invalid ASC was received."));
 		return EStateTreeRunStatus::Failed;
 	}
-	
+
 	const FDelegateHandle Handle = AbilityComponent->OnAbilityEnded.AddLambda([this, InstanceDataRef = Context.GetInstanceDataStructRef(*this)](const FAbilityEndedData& AbilityEndedData) mutable
 	{
 		FInstanceDataType* InstanceDataPtr = InstanceDataRef.GetPtr();
@@ -115,7 +115,7 @@ void FStateTreeActivateGameplayAbilityTask::ExitState(FStateTreeExecutionContext
 		InstanceData.AbilityEndedHandle.Reset();
 
 		// Force ability cancellation if it hasn't already ended and should be stopped when the state finishes.
-		if (!InstanceData.bAbilityHasEnded && InstanceData.bShouldEndAbilityWhenStateFinishes)
+		if (!InstanceData.bAbilityHasEnded && InstanceData.bShouldCancelAbilityWhenStateFinishes)
 		{
 			UE_VLOG(Context.GetOwner(), LogStateTree, Log,
 				TEXT("FStateTreeActivateGameplayAbilityTask forcing cancellation of ability activated by %s."),
