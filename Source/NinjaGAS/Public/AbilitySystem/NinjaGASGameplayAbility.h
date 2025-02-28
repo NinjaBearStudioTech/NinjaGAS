@@ -31,5 +31,19 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Gameplay Ability")
 	bool IsPassiveAbility() const;
+
+	/**
+	 * Checks if this Gameplay Ability is meant to start on cooldown.
+	 * Returns true if "Ability.InitialCooldown" is found in the Ability Tags container.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Gameplay Ability")
+	bool IsInitialCooldown() const;
+
+protected:
+
+	/**
+	 * Checks for Ability Tags, considering legacy Unreal Engine versions.
+	 */
+	bool HasAbilityTag(FGameplayTag AbilityTag) const;
 	
 };

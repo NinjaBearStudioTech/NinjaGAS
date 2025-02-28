@@ -7,11 +7,12 @@
 
 bool UNinjaGASGameplayAbility::IsPassiveAbility() const
 {
-#if ENGINE_MINOR_VERSION < 5
-	return AbilityTags.HasTagExact(Tag_GAS_Ability_Passive);
-#else
-	return GetAssetTags().HasTagExact(Tag_GAS_Ability_Passive);
-#endif
+	return HasAbilityTag(Tag_GAS_Ability_Passive);
+}
+
+bool UNinjaGASGameplayAbility::IsInitialCooldown() const
+{
+	return HasAbilityTag(Tag_GAS_Ability_InitialCooldown);	
 }
 
 void UNinjaGASGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -23,6 +24,13 @@ void UNinjaGASGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* Acto
 		static constexpr bool bAllowRemoteActivation = false;
 		ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, bAllowRemoteActivation);
 	}
+
+	if (IsInitialCooldown() && IsValid(CooldownGameplayEffectClass))
+	{
+		const FGameplayAbilitySpecHandle& Handle = GetCurrentAbilitySpecHandle();
+		const FGameplayAbilityActivationInfo& ActivationInfo = GetCurrentActivationInfo();
+		CommitAbility(Handle, ActorInfo, ActivationInfo);
+	}	
 }
 
 void UNinjaGASGameplayAbility::EndAbilityFromBatch_Implementation()
@@ -30,3 +38,11 @@ void UNinjaGASGameplayAbility::EndAbilityFromBatch_Implementation()
 	K2_EndAbility();
 }
 
+bool UNinjaGASGameplayAbility::HasAbilityTag(FGameplayTag AbilityTag) const
+{
+#if ENGINE_MINOR_VERSION < 5
+	return AbilityTags.HasTagExact(AbilityTag);
+#else
+	return GetAssetTags().HasTagExact(AbilityTag);
+#endif	
+}
