@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "StateTreeExecutionContext.h"
 #include "Abilities/GameplayAbility.h"
+#include "GameFramework/Pawn.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
@@ -84,9 +85,9 @@ EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::Tick(FStateTreeExecut
 			InstanceData.bAbilityWasCancelled ? TEXT("been cancelled") : TEXT("ended"));
 
 		// Check what is the correct status, based on the parameters assigned to the instance.
-		if (InstanceData.bShouldFinishStateWhenAbilityCompletes)
+		if (bShouldFinishStateWhenAbilityCompletes)
 		{
-			Status = InstanceData.bAbilityWasCancelled || !InstanceData.bTreatCancelledAbilityAsSuccess
+			Status = InstanceData.bAbilityWasCancelled || !bTreatCancelledAbilityAsSuccess
 				? EStateTreeRunStatus::Failed
 				: EStateTreeRunStatus::Succeeded;
 		}
@@ -115,7 +116,7 @@ void FStateTreeActivateGameplayAbilityTask::ExitState(FStateTreeExecutionContext
 		InstanceData.AbilityEndedHandle.Reset();
 
 		// Force ability cancellation if it hasn't already ended and should be stopped when the state finishes.
-		if (!InstanceData.bAbilityHasEnded && InstanceData.bShouldCancelAbilityWhenStateFinishes)
+		if (!InstanceData.bAbilityHasEnded && bShouldCancelAbilityWhenStateFinishes)
 		{
 			UE_VLOG(Context.GetOwner(), LogStateTree, Log,
 				TEXT("FStateTreeActivateGameplayAbilityTask forcing cancellation of ability activated by %s."),

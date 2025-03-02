@@ -21,18 +21,6 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 	/** Gameplay Tags used to activate the ability. */
 	UPROPERTY(EditAnywhere, Category = Parameter)
 	FGameplayTagContainer AbilityActivationTags = FGameplayTagContainer::EmptyContainer;
-
-	/** Determines if a cancelled ability should be handled as success. */
-	UPROPERTY(EditAnywhere, Category = Parameter)
-	bool bTreatCancelledAbilityAsSuccess = true;
-
-	/** If set to true, finishes the task/state once the ability ends. */
-	UPROPERTY(EditAnywhere, Category = Parameter)
-	bool bShouldFinishStateWhenAbilityCompletes = true;
-
-	/** If set to true, cancels the ability when the state changes. */
-	UPROPERTY(EditAnywhere, Category = Parameter)
-	bool bShouldCancelAbilityWhenStateFinishes = true;
 	
 	/** Spec for the Gameplay Ability that has Ended. */
 	UPROPERTY(EditAnywhere, Category = Output)
@@ -68,6 +56,18 @@ struct NINJAGAS_API FStateTreeActivateGameplayAbilityTask : public FStateTreeTas
 
 protected:
 
+	/** Determines if a cancelled ability should be handled as success. */
+	UPROPERTY(EditAnywhere, Category = Parameter)
+	bool bTreatCancelledAbilityAsSuccess = true;
+
+	/** If set to true, finishes the task/state once the ability ends. */
+	UPROPERTY(EditAnywhere, Category = Parameter)
+	bool bShouldFinishStateWhenAbilityCompletes = true;
+
+	/** If set to true, cancels the ability when the state changes. */
+	UPROPERTY(EditAnywhere, Category = Parameter)
+	bool bShouldCancelAbilityWhenStateFinishes = true;
+	
 	/**
 	 * Activates the ability requested in the context.
 	 *
