@@ -54,8 +54,8 @@ EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::ActivateAbility(const
 	const FGameplayTagContainer AbilityTriggerTags = Context.GetInstanceData(*this).AbilityActivationTags;
 	UE_VLOG(Context.GetOwner(), LogStateTree, Log, TEXT("FStateTreeActivateGameplayAbilityTask will activate ability using %s."), *AbilityTriggerTags.ToStringSimple());
 	
-	AbilityComponent->TryActivateAbilitiesByTag(AbilityTriggerTags);
-	return EStateTreeRunStatus::Running;
+	const bool bActivated = AbilityComponent->TryActivateAbilitiesByTag(AbilityTriggerTags);
+	return bActivated ? EStateTreeRunStatus::Running : EStateTreeRunStatus::Failed;
 }
 
 bool FStateTreeActivateGameplayAbilityTask::CheckAbilityThatHasEnded(const FInstanceDataType* InstanceData, const FAbilityEndedData& AbilityEndedData) const
