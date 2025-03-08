@@ -406,6 +406,33 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 	return Duration;
 }
 
+void UNinjaGASAbilitySystemComponent::CurrentMontageStop(float OverrideBlendOutTime)
+{
+	if (GEnableDefaultPlayMontage)
+	{
+		// Always useful to still allow the default flow, if there are some meaningful changes in the core system
+		// that were not yet reflect in this custom implementation. Can be enabled with CVar "GEnableDefaultPlayMontage".
+		//
+		Super::CurrentMontageStop(OverrideBlendOutTime);
+	}
+
+	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
+
+	const UAnimMontage* MontageToStop = LocalAnimMontageInfo.AnimMontage;
+	const bool bShouldStopMontage = AnimInstance && MontageToStop && !AnimInstance->Montage_GetIsStopped(MontageToStop);
+
+	if (bShouldStopMontage)
+	{
+		const float BlendOutTime = (OverrideBlendOutTime >= 0.0f ? OverrideBlendOutTime : MontageToStop->BlendOut.GetBlendTime());
+		AnimInstance->Montage_Stop(BlendOutTime, MontageToStop);
+
+		if (IsOwnerActorAuthoritative())
+		{
+			AnimMontage_UpdateReplicatedData();
+		}
+	}
+}
+
 void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo, UAnimMontage* NewMontageToPlay, const FName& StartSectionName)
 {
 	const uint8 PlayInstanceId = MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0;

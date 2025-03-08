@@ -56,17 +56,17 @@ struct NINJAGAS_API FStateTreeActivateGameplayAbilityTask : public FStateTreeTas
 
 protected:
 
-	/** Determines if a cancelled ability should be handled as success. */
-	UPROPERTY(EditAnywhere, Category = Parameter)
-	bool bTreatCancelledAbilityAsSuccess = true;
-
 	/** If set to true, finishes the task/state once the ability ends. */
 	UPROPERTY(EditAnywhere, Category = Parameter)
 	bool bShouldFinishStateWhenAbilityCompletes = true;
-
+	
+	/** Determines if a cancelled ability should be handled as success. */
+	UPROPERTY(EditAnywhere, Category = Parameter)
+	bool bTreatCancelledAbilityAsSuccess = false;
+	
 	/** If set to true, cancels the ability when the state changes. */
 	UPROPERTY(EditAnywhere, Category = Parameter)
-	bool bShouldCancelAbilityWhenStateFinishes = true;
+	bool bShouldCancelAbilityWhenStateFinishes = false;
 	
 	/**
 	 * Activates the ability requested in the context.

@@ -61,6 +61,7 @@ public:
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
 	virtual bool ShouldDoServerAbilityRPCBatch() const override;
 	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f) override;
+	virtual void CurrentMontageStop(float OverrideBlendOutTime) override;
 	// -- End Ability System Component implementation
 
 	// -- Begin Ability System Defaults implementation
