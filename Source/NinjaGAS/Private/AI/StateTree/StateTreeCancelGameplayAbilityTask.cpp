@@ -5,6 +5,7 @@
 #include "AbilitySystemGlobals.h"
 #include "AIController.h"
 #include "StateTreeExecutionContext.h"
+#include "VisualLogger/VisualLogger.h"
 
 EStateTreeRunStatus FStateTreeCancelGameplayAbilityTask::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {

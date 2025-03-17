@@ -8,6 +8,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "GameFramework/Pawn.h"
 #include "Runtime/Launch/Resources/Version.h"
+#include "VisualLogger/VisualLogger.h"
 
 EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
