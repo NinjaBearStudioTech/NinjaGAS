@@ -10,12 +10,25 @@
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Interfaces/BatchGameplayAbilityInterface.h"
 
+/**
+ * CVAR to control the "Play Montage" flow.
+ * Example: ninjagas.EnableDefaultPlayMontage true
+ */
+static bool GEnableDefaultPlayMontage = false;
+static FAutoConsoleVariableRef CVarEnableDefaultPlayMontage(
+	TEXT("ninjagas.EnableDefaultPlayMontage"),
+	GEnableDefaultPlayMontage,
+	TEXT("Enables or disables the PlayMontage default behavior."),
+	ECVF_Default
+);
+
 UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 {
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
 
 	bEnableAbilityBatchRPC = true;
+	bResetStateWhenAvatarChanges = true;
 	CurrentAbilitySetup = nullptr;
 }
 
@@ -29,6 +42,11 @@ void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor,
 	// Apply the new defaults obtained from the owner's interface.
 	if (bAvatarHasChanged)
 	{
+		if (bResetStateWhenAvatarChanges)
+		{
+			ResetAbilitySystemComponent();	
+		}
+		
 		InitializeDefaults(InAvatarActor);
 		OnAbilitySystemAvatarChanged.Broadcast(InAvatarActor);
 	}
@@ -49,7 +67,7 @@ void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatar
 	}
 
 	const UNinjaGASDataAsset* AbilityData = Defaults->GetAbilityData();
-	if (IsValid(AbilityData) && AbilityData != CurrentAbilitySetup)
+	if (IsValid(AbilityData))
 	{
 		ClearDefaults();
 		CurrentAbilitySetup = AbilityData;
@@ -255,6 +273,18 @@ void UNinjaGASAbilitySystemComponent::RemoveGameplayCueLocally(const FGameplayTa
 {
 	UGameplayCueManager* CueManager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
 	CueManager->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);
+}
+
+void UNinjaGASAbilitySystemComponent::ResetAbilitySystemComponent()
+{
+	DestroyActiveState();
+	RemoveAllSpawnedAttributes();
+	RemoveAllGameplayCues();
+	
+	for (const FActiveGameplayEffect& Effect : &ActiveGameplayEffects)
+	{
+		RemoveActiveGameplayEffect(Effect.Handle);
+	}
 }
 
 void UNinjaGASAbilitySystemComponent::ClearActorInfo()

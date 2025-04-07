@@ -12,18 +12,6 @@ class UNinjaGASDataAsset;
 class UAnimMontage;
 
 /**
- * CVAR to control the "Play Montage" flow.
- * Example: ninjagas.EnableDefaultPlayMontage true
- */
-static bool GEnableDefaultPlayMontage = false;
-static FAutoConsoleVariableRef CVarEnableDefaultPlayMontage(
-	TEXT("ninjagas.EnableDefaultPlayMontage"),
-	GEnableDefaultPlayMontage,
-	TEXT("Enables or disables the PlayMontage default behavior."),
-	ECVF_Default
-);
-
-/**
  * Specialized version of the Ability System Component.
  *
  * Includes many quality of life elements that are an aggregation of multiple common practices.
@@ -31,6 +19,7 @@ static FAutoConsoleVariableRef CVarEnableDefaultPlayMontage(
  * - Data-driven configuration of default Gameplay Abilities.
  * - Support for runtime IK Retarget setup, where the animation is driven by a hidden mesh.
  * - Batch activation and local cues, as per Dan Tranek's GAS Compendium.
+ * - Automatic reset of the ASC when the avatar changes, or on-demand.
  * - Lazy loading the ASC, as per Alvaro Jover-Alvarez (Vorixo)'s blog.
  *
  * Additional references:
@@ -150,6 +139,12 @@ public:
 	void RemoveGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
+	 * Resets all Gameplay Abilities, Gameplay Effects, Attribute Sets and additional Gameplay Cues.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	virtual void ResetAbilitySystemComponent();
+	
+	/**
 	 * Sets a base attribute value, after a deferred/lazy initialization.
 	 *
 	 * @param Attribute		Attribute being updated.
@@ -176,6 +171,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	TObjectPtr<const UNinjaGASDataAsset> DefaultAbilitySetup;
 
+	/**
+	 * If set to true, fully resets the ASC State when the avatar changes.
+	 *
+	 * This means removing all gameplay abilities, gameplay effects and spawned attributes,
+	 * before assigning new ones from scratch, using the default setup assigned to the new
+	 * avatar, or to this component.
+	 *
+	 * If you don't want to reset the state for any avatar change, then you can set this to
+	 * "false", and call "ResetAbilitySystemComponent" whenever the new avatar activates.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
+	bool bResetStateWhenAvatarChanges;
+	
 	/**
 	 * Determines if the ASC can batch-activate abilities.
 	 *
