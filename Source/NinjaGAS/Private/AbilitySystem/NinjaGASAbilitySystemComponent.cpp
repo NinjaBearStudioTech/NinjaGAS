@@ -280,7 +280,8 @@ void UNinjaGASAbilitySystemComponent::ResetAbilitySystemComponent()
 	DestroyActiveState();
 	RemoveAllSpawnedAttributes();
 	RemoveAllGameplayCues();
-	
+	GameplayTagCountContainer.Reset();
+
 	for (const FActiveGameplayEffect& Effect : &ActiveGameplayEffects)
 	{
 		RemoveActiveGameplayEffect(Effect.Handle);
