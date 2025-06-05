@@ -24,8 +24,11 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 	
 	/** Spec for the Gameplay Ability that has Ended. */
 	UPROPERTY(EditAnywhere, Category = Output)
-	FGameplayAbilitySpecHandle AbilitySpec = FGameplayAbilitySpecHandle();
+	FGameplayAbilitySpecHandle AbilitySpecHandle = FGameplayAbilitySpecHandle();
 
+	/** The last ability that has ended. */
+	TWeakObjectPtr<UGameplayAbility> AbilityThatEnded;
+	
 	/** Informs when the ability has ended. */
 	UPROPERTY(EditAnywhere, Category = Output)
 	bool bAbilityHasEnded = false;
@@ -36,6 +39,7 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 
 	/** Delegate Handle provided by the ASC. */
 	FDelegateHandle AbilityEndedHandle;
+	
 };
 
 /**
@@ -84,7 +88,7 @@ protected:
 	 * @param AbilityEndedData		Information about the Gameplay Ability that has ended.
 	 * @return						True if this is the same ability that this task activated.
 	 */
-	virtual bool CheckAbilityThatHasEnded(const FInstanceDataType* InstanceData, const FAbilityEndedData& AbilityEndedData) const;
+	virtual bool CheckAbilityThatHasEnded(const FInstanceDataType& InstanceData) const;
 
 #if WITH_EDITOR
 public:
