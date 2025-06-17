@@ -6,17 +6,11 @@
 #include "StateTreeTaskBase.h"
 #include "StateTreeActivateGameplayAbilityTask.generated.h"
 
-class AAIController;
-
 USTRUCT()
 struct FStateTreeActivateGameplayAbilityTaskInstanceData
 {
 	
 	GENERATED_BODY()
-
-	/** The AI Controller that is running the State Tree. */
-	UPROPERTY(EditAnywhere, Category = Context)
-	TObjectPtr<AAIController> AIController = nullptr;
 
 	/** Gameplay Tags used to activate the ability. */
 	UPROPERTY(EditAnywhere, Category = Parameter)
@@ -24,8 +18,14 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 	
 	/** Spec for the Gameplay Ability that has Ended. */
 	UPROPERTY(EditAnywhere, Category = Output)
-	FGameplayAbilitySpecHandle AbilitySpec = FGameplayAbilitySpecHandle();
+	FGameplayAbilitySpecHandle AbilitySpecHandle = FGameplayAbilitySpecHandle();
 
+	/** The last ability that has ended. */
+	TWeakObjectPtr<UGameplayAbility> AbilityThatEnded;
+
+	/** Owner Ability System Component. */
+	TWeakObjectPtr<UAbilitySystemComponent> AbilityComponent;
+	
 	/** Informs when the ability has ended. */
 	UPROPERTY(EditAnywhere, Category = Output)
 	bool bAbilityHasEnded = false;
@@ -35,7 +35,20 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 	bool bAbilityWasCancelled = false;
 
 	/** Delegate Handle provided by the ASC. */
-	FDelegateHandle AbilityEndedHandle;
+	FDelegateHandle AbilityEndedDelegateHandle;
+
+	/**
+	 * Checks that a given "Ability Ended" data contains the ability tracked by this struct.
+	 * The comparison happens using the Activation Tags configured in the task data.
+	 */
+	bool CheckAbilityThatHasEnded(const FAbilityEndedData& AbilityEndedData) const;
+
+	/**
+	 * Reset the bindings, keeping the outcome data (ability ended, cancellation, spec, etc.). 
+	 * This will clear the handle and ability system component, which are not needed anymore
+	 */
+	void ResetBindings();
+	
 };
 
 /**
@@ -67,24 +80,20 @@ protected:
 	/** If set to true, cancels the ability when the state changes. */
 	UPROPERTY(EditAnywhere, Category = Parameter)
 	bool bShouldCancelAbilityWhenStateFinishes = false;
+
+	/**
+	 * Retrieves the Ability System component from the context owner.
+	 * It will attempt to find the ASC for an owner that is an AI Controller or Pawn.
+	 */
+	static UAbilitySystemComponent* GetAbilitySystemComponent(const FStateTreeExecutionContext& Context);
 	
 	/**
 	 * Activates the ability requested in the context.
 	 *
 	 * @param Context				Context providing activation info.
-	 * @param AbilityComponent		Ability System Component that will activate the ability.
 	 * @return						True if the activation is successful.
 	 */
-	virtual EStateTreeRunStatus ActivateAbility(const FStateTreeExecutionContext& Context, UAbilitySystemComponent* AbilityComponent) const;
-
-	/**
-	 * Checks the ability that has ended to match if it's the one we are trying to activate.
-	 *
-	 * @param InstanceData			Access to the instance data backing this task.
-	 * @param AbilityEndedData		Information about the Gameplay Ability that has ended.
-	 * @return						True if this is the same ability that this task activated.
-	 */
-	virtual bool CheckAbilityThatHasEnded(const FInstanceDataType* InstanceData, const FAbilityEndedData& AbilityEndedData) const;
+	virtual EStateTreeRunStatus ActivateAbility(const FStateTreeExecutionContext& Context) const;
 
 #if WITH_EDITOR
 public:

@@ -4,6 +4,7 @@
 #include "AbilitySystemGlobals.h"
 #include "GameplayCueManager.h"
 #include "NinjaGASLog.h"
+#include "NinjaGASTags.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Data/NinjaGASDataAsset.h"
@@ -278,14 +279,15 @@ void UNinjaGASAbilitySystemComponent::RemoveGameplayCueLocally(const FGameplayTa
 void UNinjaGASAbilitySystemComponent::ResetAbilitySystemComponent()
 {
 	DestroyActiveState();
-	RemoveAllSpawnedAttributes();
 	RemoveAllGameplayCues();
-	GameplayTagCountContainer.Reset();
 
 	for (const FActiveGameplayEffect& Effect : &ActiveGameplayEffects)
 	{
 		RemoveActiveGameplayEffect(Effect.Handle);
 	}
+
+	RemoveAllSpawnedAttributes();
+	GameplayTagCountContainer.Reset();
 }
 
 void UNinjaGASAbilitySystemComponent::ClearActorInfo()
@@ -543,7 +545,16 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 	int32 AbilityHandleCount = 0;
 	for (auto It(DefaultAbilityHandles.CreateIterator()); It; ++It)
 	{
-		SetRemoveAbilityOnEnd(*It);
+		const FGameplayAbilitySpecHandle& Handle = *It;
+		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
+		
+		if (Spec && Spec->Ability->GetAssetTags().HasTagExact(Tag_GAS_Ability_Passive))
+		{
+			// A passive ability will not end, so we need to deliberately cancel it first.
+			CancelAbilityHandle(Handle);
+		}
+		
+		SetRemoveAbilityOnEnd(Handle);	
 		It.RemoveCurrent();
 		++AbilityHandleCount;
 	}

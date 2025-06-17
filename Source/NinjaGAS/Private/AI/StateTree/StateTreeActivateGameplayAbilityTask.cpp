@@ -10,74 +10,116 @@
 #include "Runtime/Launch/Resources/Version.h"
 #include "VisualLogger/VisualLogger.h"
 
-EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
-{
-	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.AIController)
-	{
-		UE_VLOG(Context.GetOwner(), LogStateTree, Error, TEXT("FStateTreeActivateGameplayAbilityTask failed since AIController is missing."));
-		return EStateTreeRunStatus::Failed;
-	}
-
-	const APawn* Pawn = InstanceData.AIController->GetPawn();
-	UAbilitySystemComponent* AbilityComponent = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Pawn);
-	if (!AbilityComponent)
-	{
-		UE_VLOG(Context.GetOwner(), LogStateTree, Error, TEXT("FStateTreeActivateGameplayAbilityTask failed since Pawn does not have an ASC."));
-		return EStateTreeRunStatus::Failed;
-	}
-
-	return ActivateAbility(Context, AbilityComponent);
-}
-
-EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::ActivateAbility(const FStateTreeExecutionContext& Context, UAbilitySystemComponent* AbilityComponent) const
-{
-	if (!IsValid(AbilityComponent))
-	{
-		UE_VLOG(Context.GetOwner(), LogStateTree, Error, TEXT("FStateTreeActivateGameplayAbilityTask failed since an invalid ASC was received."));
-		return EStateTreeRunStatus::Failed;
-	}
-
-	const FDelegateHandle Handle = AbilityComponent->OnAbilityEnded.AddLambda([this, InstanceDataRef = Context.GetInstanceDataStructRef(*this)](const FAbilityEndedData& AbilityEndedData) mutable
-	{
-		FInstanceDataType* InstanceDataPtr = InstanceDataRef.GetPtr();
-		if (InstanceDataPtr && CheckAbilityThatHasEnded(InstanceDataPtr, AbilityEndedData))
-		{
-			InstanceDataPtr->bAbilityHasEnded = true;
-			InstanceDataPtr->AbilitySpec = AbilityEndedData.AbilitySpecHandle;
-			InstanceDataPtr->bAbilityWasCancelled = AbilityEndedData.bWasCancelled;
-		}
-	});
-
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	InstanceData.AbilityEndedHandle = Handle;
-	
-	const FGameplayTagContainer AbilityTriggerTags = Context.GetInstanceData(*this).AbilityActivationTags;
-	UE_VLOG(Context.GetOwner(), LogStateTree, Log, TEXT("FStateTreeActivateGameplayAbilityTask will activate ability using %s."), *AbilityTriggerTags.ToStringSimple());
-	
-	const bool bActivated = AbilityComponent->TryActivateAbilitiesByTag(AbilityTriggerTags);
-	return bActivated ? EStateTreeRunStatus::Running : EStateTreeRunStatus::Failed;
-}
-
-bool FStateTreeActivateGameplayAbilityTask::CheckAbilityThatHasEnded(const FInstanceDataType* InstanceData, const FAbilityEndedData& AbilityEndedData) const
+bool FStateTreeActivateGameplayAbilityTaskInstanceData::CheckAbilityThatHasEnded(const FAbilityEndedData& AbilityEndedData) const
 {
 	FGameplayTagContainer AbilityThatEndedTags = FGameplayTagContainer();
-
-#if ENGINE_MINOR_VERSION < 5
+	if (!IsValid(AbilityEndedData.AbilityThatEnded) || !AbilityEndedData.AbilitySpecHandle.IsValid())
+	{
+		return false;
+	}
+	
+#if ENGINE_MINOR_VERSION == 5 && ENGINE_MINOR_VERSION < 5
 	AbilityThatEndedTags.AppendTags(Data.AbilityThatEnded->AbilityTags);
 #else
 	AbilityThatEndedTags.AppendTags(AbilityEndedData.AbilityThatEnded->GetAssetTags());
 #endif
 
-	const FGameplayTagContainer AbilityActivationTags = InstanceData->AbilityActivationTags;
+	// Check that the ability that ended has all activation tags that we are targeting.
 	return AbilityThatEndedTags.HasAll(AbilityActivationTags);
+}
+
+void FStateTreeActivateGameplayAbilityTaskInstanceData::ResetBindings()
+{
+	if (AbilityComponent.IsValid() && AbilityEndedDelegateHandle.IsValid())
+	{
+		// Remove the binding from the ASC, before removing the pointers.
+		AbilityComponent->OnAbilityEnded.Remove(AbilityEndedDelegateHandle);
+	}
+	
+	AbilityComponent.Reset();
+	AbilityEndedDelegateHandle.Reset();
+}
+
+EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	UAbilitySystemComponent* AbilityComponent = GetAbilitySystemComponent(Context);
+	if (!AbilityComponent)
+	{
+		UE_VLOG(Context.GetOwner(), LogStateTree, Error, TEXT("FStateTreeActivateGameplayAbilityTask::EnterState failed since Pawn does not have an ASC."));
+		return EStateTreeRunStatus::Failed;
+	}
+
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	InstanceData.bAbilityHasEnded = false;
+	InstanceData.AbilitySpecHandle = FGameplayAbilitySpecHandle();
+	InstanceData.AbilityComponent = AbilityComponent;
+
+	return ActivateAbility(Context);
+}
+
+UAbilitySystemComponent* FStateTreeActivateGameplayAbilityTask::GetAbilitySystemComponent(const FStateTreeExecutionContext& Context)
+{
+	const AActor* OwnerActor = Cast<AActor>(Context.GetOwner());
+	if (!IsValid(OwnerActor))
+	{
+		return nullptr;
+	}
+
+	if (OwnerActor->IsA<AAIController>())
+	{
+		const APawn* OwnerPawn = Cast<AAIController>(OwnerActor)->GetPawn();
+		return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerPawn);
+	}
+
+	// Simply try to obtain the ASC directly from the actor (probably a pawn/character).
+	return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerActor);
+}
+
+EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::ActivateAbility(const FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.AbilityComponent.IsValid())
+	{
+		UE_VLOG(Context.GetOwner(), LogStateTree, Error, TEXT("FStateTreeActivateGameplayAbilityTask::ActivateAbility failed, context has an invalid ASC."));
+		return EStateTreeRunStatus::Failed;
+	}
+
+	UAbilitySystemComponent* AbilityComponent = InstanceData.AbilityComponent.Get();
+	const FDelegateHandle Handle = AbilityComponent->OnAbilityEnded.AddLambda([InstanceDataRef = Context.GetInstanceDataStructRef(*this)](const FAbilityEndedData& AbilityEndedData) mutable
+	{
+		if (InstanceDataRef.IsValid())
+		{
+			FInstanceDataType* InstanceDataPtr = InstanceDataRef.GetPtr();
+			if (InstanceDataPtr && InstanceDataPtr->CheckAbilityThatHasEnded(AbilityEndedData))
+			{
+				InstanceDataPtr->bAbilityHasEnded = true;
+				InstanceDataPtr->AbilityThatEnded = AbilityEndedData.AbilityThatEnded;
+				InstanceDataPtr->AbilitySpecHandle = AbilityEndedData.AbilitySpecHandle;
+				InstanceDataPtr->bAbilityWasCancelled = AbilityEndedData.bWasCancelled;
+				InstanceDataPtr->ResetBindings();
+			}
+		}
+	});
+
+	bool bActivated = false; 
+	if (Handle.IsValid())
+	{
+		InstanceData.AbilityEndedDelegateHandle = Handle;
+
+		const FGameplayTagContainer AbilityTriggerTags = Context.GetInstanceData(*this).AbilityActivationTags;
+		UE_VLOG(Context.GetOwner(), LogStateTree, Log, TEXT("FStateTreeActivateGameplayAbilityTask will activate ability using %s."), *AbilityTriggerTags.ToStringSimple());
+		
+		bActivated = AbilityComponent->TryActivateAbilitiesByTag(AbilityTriggerTags);
+	}
+	
+	return bActivated ? EStateTreeRunStatus::Running : EStateTreeRunStatus::Failed;
 }
 
 EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
 	EStateTreeRunStatus Status = EStateTreeRunStatus::Running;
+
 	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	
 	if (InstanceData.bAbilityHasEnded)
 	{
 		UE_VLOG(Context.GetOwner(), LogStateTree, Log,
@@ -100,41 +142,38 @@ EStateTreeRunStatus FStateTreeActivateGameplayAbilityTask::Tick(FStateTreeExecut
 void FStateTreeActivateGameplayAbilityTask::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-
-	if (!IsValid(InstanceData.AIController))
+	if (InstanceData.AbilityComponent.IsValid() && InstanceData.AbilityComponent->IsValidLowLevelFast())
 	{
-		UE_VLOG(Context.GetOwner(), LogStateTree, Warning, TEXT("FStateTreeActivateGameplayAbilityTask AIController is invalid in ExitState."));
-		return;
-	}
+		UAbilitySystemComponent* AbilityComponent = InstanceData.AbilityComponent.Get();
 
-	const APawn* Pawn = InstanceData.AIController->GetPawn();
-	UAbilitySystemComponent* AbilityComponent = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Pawn);
+		// Delegate cleanup (only if actually bound).
+		if (InstanceData.AbilityEndedDelegateHandle.IsValid())
+		{
+			AbilityComponent->OnAbilityEnded.Remove(InstanceData.AbilityEndedDelegateHandle);
+			InstanceData.AbilityEndedDelegateHandle.Reset();
+		}
 
-	if (IsValid(AbilityComponent) && InstanceData.AbilityEndedHandle.IsValid())
-	{
-		// Remove the delegate first to avoid notifications when forcibly ending the ability.
-		AbilityComponent->OnAbilityEnded.Remove(InstanceData.AbilityEndedHandle);
-		InstanceData.AbilityEndedHandle.Reset();
-
-		// Force ability cancellation if it hasn't already ended and should be stopped when the state finishes.
+		// Cancel ability if it's still running and we are configured to do so.
 		if (!InstanceData.bAbilityHasEnded && bShouldCancelAbilityWhenStateFinishes)
 		{
 			UE_VLOG(Context.GetOwner(), LogStateTree, Log,
 				TEXT("FStateTreeActivateGameplayAbilityTask forcing cancellation of ability activated by %s."),
 				*InstanceData.AbilityActivationTags.ToStringSimple());
 
-			if (InstanceData.AbilitySpec.IsValid())
+			if (InstanceData.AbilitySpecHandle.IsValid())
 			{
-				// Unlikely to have a valid handle here. But if we do, then use it.
-				AbilityComponent->CancelAbilityHandle(InstanceData.AbilitySpec);	
+				AbilityComponent->CancelAbilityHandle(InstanceData.AbilitySpecHandle);
 			}
 			else
 			{
-				const FGameplayTagContainer AbilityThatEndedTags = InstanceData.AbilityActivationTags;
-				AbilityComponent->CancelAbilities(&AbilityThatEndedTags);
+				AbilityComponent->CancelAbilities(&InstanceData.AbilityActivationTags);
 			}
-		}
+		}		
 	}
+	
+	InstanceData.AbilityEndedDelegateHandle.Reset();
+	InstanceData.AbilityThatEnded.Reset();
+	InstanceData.AbilityComponent.Reset();
 }
 
 #if WITH_EDITOR
