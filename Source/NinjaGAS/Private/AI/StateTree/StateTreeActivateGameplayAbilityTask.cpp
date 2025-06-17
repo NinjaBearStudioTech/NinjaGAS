@@ -156,7 +156,7 @@ FText FStateTreeActivateGameplayAbilityTask::GetDescription(const FGuid& ID, con
 		Value = NSLOCTEXT("StateTree", "EmptyTags", "Empty Tags");
 	}
 	
-	const FText Format = (Formatting == RichText)
+	const FText Format = (Formatting == EStateTreeNodeFormatting::RichText)
 		? NSLOCTEXT("StateTree", "AbilityRich", "<b>Activate Ability</> {AbilityTags}")
 		: NSLOCTEXT("StateTree", "Ability", "Activate Ability {AbilityTags}");
 
