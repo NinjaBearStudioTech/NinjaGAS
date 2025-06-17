@@ -196,7 +196,7 @@ FText FStateTreeActivateGameplayAbilityTask::GetDescription(const FGuid& ID, con
 	}
 	
 	const FText Format = (Formatting == EStateTreeNodeFormatting::RichText)
-		? NSLOCTEXT("StateTree", "AbilityRich", "<b>Activate Ability</> {AbilityTags}")
+		? NSLOCTEXT("StateTree", "AbilityRich", "<s>Activate Ability</> <b>{AbilityTags}</>")
 		: NSLOCTEXT("StateTree", "Ability", "Activate Ability {AbilityTags}");
 
 	return FText::FormatNamed(Format,
