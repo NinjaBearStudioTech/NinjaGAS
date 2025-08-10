@@ -55,7 +55,7 @@ void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor,
 
 void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatarActor)
 {
-	if (!IsValid(NewAvatarActor) || !IsOwnerActorAuthoritative())
+	if (!IsValid(NewAvatarActor))
 	{
 		return;
 	}
@@ -78,7 +78,7 @@ void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatar
 
 void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityData)
 {
-	if (!IsValid(AbilityData) || !IsOwnerActorAuthoritative())
+	if (!IsValid(AbilityData))
 	{
 		return;
 	}
@@ -92,51 +92,63 @@ void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatar
 	const TArray<FDefaultAttributeSet>& AttributeSets = AbilityData->DefaultAttributeSets;
 	InitializeAttributeSets(AttributeSets);
 
-	const TArray<FDefaultGameplayEffect>& GameplayEffects = AbilityData->DefaultGameplayEffects;
-	InitializeGameplayEffects(GameplayEffects);
+	int32 TagCount = 0;
+	const bool bIsAuth = IsOwnerActorAuthoritative(); 
 
-	const TArray<FDefaultGameplayAbility>& GameplayAbilities = AbilityData->DefaultGameplayAbilities;
-	InitializeGameplayAbilities(GameplayAbilities);
-
-	const FGameplayTagContainer& InitialGameplayTags = AbilityData->InitialGameplayTags; 
-	if (InitialGameplayTags.IsValid())
+	if (bIsAuth)
 	{
-		AddReplicatedLooseGameplayTags(InitialGameplayTags);
+		const TArray<FDefaultGameplayEffect>& GameplayEffects = AbilityData->DefaultGameplayEffects;
+		InitializeGameplayEffects(GameplayEffects);
+
+		const TArray<FDefaultGameplayAbility>& GameplayAbilities = AbilityData->DefaultGameplayAbilities;
+		InitializeGameplayAbilities(GameplayAbilities);
+
+		const FGameplayTagContainer& InitialGameplayTags = AbilityData->InitialGameplayTags; 
+		if (InitialGameplayTags.IsValid())
+		{
+			TagCount = InitialGameplayTags.Num();
+			AddReplicatedLooseGameplayTags(InitialGameplayTags);
+		}
 	}
-	
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults from %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags %d ]."),
-		*GetNameSafe(AbilityData), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num(), InitialGameplayTags.Num());	
+
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults on %s from %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags %d ]."),
+		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(AbilityData), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num(), TagCount);		
 }
 
 void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets)
 {
+	const bool bIsAuth = IsOwnerActorAuthoritative();
+	
 	for (const FDefaultAttributeSet& Entry : AttributeSets)
 	{
-		const TSubclassOf<UAttributeSet> AttributeSetClass = Entry.AttributeSetClass;
-		if (!IsValid(AttributeSetClass))
+		if ((bIsAuth && Entry.AppliesOnServer()) || (!bIsAuth && Entry.AppliesOnClient()))
 		{
-			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Attribute Set Entry is missing a valid Attribute Set class!"));
-			continue;	
-		}
+			const TSubclassOf<UAttributeSet> AttributeSetClass = Entry.AttributeSetClass;
+			if (!IsValid(AttributeSetClass))
+			{
+				UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Attribute Set Entry is missing a valid Attribute Set class!"));
+				continue;	
+			}
 
-		if (GetSpawnedAttributes().ContainsByPredicate([AttributeSetClass](const UAttributeSet* AttributeSet){ return AttributeSet->GetClass() == AttributeSetClass; }))
-		{
-			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Discarding Attribute Set %s since it was already spawned!"), *GetNameSafe(AttributeSetClass));
-			continue;
-		}
+			if (GetSpawnedAttributes().ContainsByPredicate([AttributeSetClass](const UAttributeSet* AttributeSet){ return AttributeSet->GetClass() == AttributeSetClass; }))
+			{
+				UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Discarding Attribute Set %s since it was already spawned!"), *GetNameSafe(AttributeSetClass));
+				continue;
+			}
 		
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
-		check(IsValid(NewAttributeSet));
+			UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
+			check(IsValid(NewAttributeSet));
 		
-		const UDataTable* AttributeTable = Entry.AttributeTable;
-		if (IsValid(AttributeTable))
-		{
-			NewAttributeSet->InitFromMetaDataTable(AttributeTable);
-			UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
-		}
+			const UDataTable* AttributeTable = Entry.AttributeTable;
+			if (IsValid(AttributeTable))
+			{
+				NewAttributeSet->InitFromMetaDataTable(AttributeTable);
+				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
+			}
 
-		AddAttributeSetSubobject(NewAttributeSet);
-		AddedAttributes.Add(NewAttributeSet);			
+			AddAttributeSetSubobject(NewAttributeSet);
+			AddedAttributes.Add(NewAttributeSet);
+		}
 	}	
 }
 
@@ -527,47 +539,49 @@ void UNinjaGASAbilitySystemComponent::DeferredSetBaseAttributeValueFromReplicati
 
 void UNinjaGASAbilitySystemComponent::ClearDefaults()
 {
-	if (!IsOwnerActorAuthoritative())
-	{
-		return;
-	}
-
-	FGameplayTagContainer InitialGameplayTags = FGameplayTagContainer::EmptyContainer;  
-	if (IsValid(CurrentAbilitySetup))
-	{
-		InitialGameplayTags = CurrentAbilitySetup->InitialGameplayTags;
-		if (InitialGameplayTags.IsValid())
-		{
-			RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
-		}	
-	}
-	
+	int32 TagCount = 0;
 	int32 AbilityHandleCount = 0;
-	for (auto It(DefaultAbilityHandles.CreateIterator()); It; ++It)
+	int32 EffectHandleCount = 0;
+	int32 AttributeSetCount = 0;
+
+	const bool bIsAuth = IsOwnerActorAuthoritative(); 
+	if (bIsAuth)
 	{
-		const FGameplayAbilitySpecHandle& Handle = *It;
-		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
-		
-		if (Spec && Spec->Ability->GetAssetTags().HasTagExact(Tag_GAS_Ability_Passive))
+		FGameplayTagContainer InitialGameplayTags = FGameplayTagContainer::EmptyContainer;  
+		if (IsValid(CurrentAbilitySetup))
 		{
-			// A passive ability will not end, so we need to deliberately cancel it first.
-			CancelAbilityHandle(Handle);
+			InitialGameplayTags = CurrentAbilitySetup->InitialGameplayTags;
+			if (InitialGameplayTags.IsValid())
+			{
+				TagCount = InitialGameplayTags.Num();
+				RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
+			}	
+		}
+	
+		for (auto It(DefaultAbilityHandles.CreateIterator()); It; ++It)
+		{
+			const FGameplayAbilitySpecHandle& Handle = *It;
+			const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
+		
+			if (Spec && Spec->Ability->GetAssetTags().HasTagExact(Tag_GAS_Ability_Passive))
+			{
+				// A passive ability will not end, so we need to deliberately cancel it first.
+				CancelAbilityHandle(Handle);
+			}
+		
+			SetRemoveAbilityOnEnd(Handle);	
+			It.RemoveCurrent();
+			++AbilityHandleCount;
 		}
 		
-		SetRemoveAbilityOnEnd(Handle);	
-		It.RemoveCurrent();
-		++AbilityHandleCount;
+		for (auto It(DefaultEffectHandles.CreateIterator()); It; ++It)
+		{
+			RemoveActiveGameplayEffect(*It);
+			It.RemoveCurrent();
+			++EffectHandleCount;
+		}
 	}
-
-	int32 EffectHandleCount = 0;
-	for (auto It(DefaultEffectHandles.CreateIterator()); It; ++It)
-	{
-		RemoveActiveGameplayEffect(*It);
-		It.RemoveCurrent();
-		++EffectHandleCount;
-	}
-
-	int32 AttributeSetCount = 0;
+	
 	for (auto It(AddedAttributes.CreateIterator()); It; ++It)
 	{
 		RemoveSpawnedAttribute(*It);
@@ -576,7 +590,7 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 	}
 
 	CurrentAbilitySetup = nullptr;
-	
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("[%s] Cleared Gameplay Elements: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags: %d ]."),
-		*GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount, InitialGameplayTags.Num());
+
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Cleared Gameplay Elements on %s for %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags: %d ]."),
+		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount, TagCount);
 }

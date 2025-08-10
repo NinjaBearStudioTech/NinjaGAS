@@ -16,7 +16,7 @@ ANinjaGASCharacter::ANinjaGASCharacter(const FObjectInitializer& ObjectInitializ
 	bInitializeAbilityComponentOnBeginPlay = true;
 	NetPriority = 2.f;
 	
-#if ENGINE_MINOR_VERSION < 5
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = 11.f;
 	NetUpdateFrequency = 33.f;
 #else
@@ -133,7 +133,7 @@ void ANinjaGASCharacter::InitializeFromPlayerState()
 	
 	NetPriority = MyState->NetPriority;
 	
-#if ENGINE_MINOR_VERSION < 5
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 5
 	MinNetUpdateFrequency = MyState->MinNetUpdateFrequency;
 	NetUpdateFrequency = MyState->NetUpdateFrequency;
 #else

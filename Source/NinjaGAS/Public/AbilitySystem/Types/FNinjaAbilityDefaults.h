@@ -10,6 +10,19 @@ class UDataTable;
 class UGameplayAbility;
 class UGameplayEffect;
 
+UENUM(BlueprintType)
+enum class EAttributeSetInstantiationScope : uint8
+{
+	/** This attribute set will only be applied in the local client. */
+	Local,
+
+	/** This attribute set will only be applied in the server. */
+	Server,
+
+	/** This attribute set will be applied in both the server and local client. */
+	Both
+};
+
 /**
  * Default Attribute Set, with initialization data.
  */
@@ -23,10 +36,14 @@ struct NINJAGAS_API FDefaultAttributeSet
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
 	TSubclassOf<UAttributeSet> AttributeSetClass;
 
+	/** Scope for this Attribute Set. */
+	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
+	EAttributeSetInstantiationScope InstantiationScope = EAttributeSetInstantiationScope::Both;
+	
 	/** Data table with default attribute values. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set", meta = (RequiredAssetDataTags = "RowStructure=/Script/GameplayAbilities.AttributeMetaData"))
 	TObjectPtr<const UDataTable> AttributeTable;
-
+	
 	FDefaultAttributeSet()
 	{
 	}
@@ -34,6 +51,18 @@ struct NINJAGAS_API FDefaultAttributeSet
 	FDefaultAttributeSet(const TSubclassOf<UAttributeSet>& AttributeSet, const UDataTable* AttributeTable)
 		: AttributeSetClass(AttributeSet), AttributeTable(AttributeTable)
 	{
+	}
+
+	bool AppliesOnServer() const
+	{
+		return InstantiationScope == EAttributeSetInstantiationScope::Server
+			|| InstantiationScope == EAttributeSetInstantiationScope::Both;
+	}
+
+	bool AppliesOnClient() const
+	{
+		return InstantiationScope == EAttributeSetInstantiationScope::Local
+			|| InstantiationScope == EAttributeSetInstantiationScope::Both;
 	}
 };
 

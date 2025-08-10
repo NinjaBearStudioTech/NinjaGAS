@@ -4,6 +4,8 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "StateTreeExecutionContext.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/Pawn.h"
 
 float FStateTreeAbilityCooldownConsideration::GetScore(FStateTreeExecutionContext& Context) const
 {
