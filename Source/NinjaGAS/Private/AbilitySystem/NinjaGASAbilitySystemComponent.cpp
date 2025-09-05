@@ -33,6 +33,12 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	CurrentAbilitySetup = nullptr;
 }
 
+void UNinjaGASAbilitySystemComponent::BeginDestroy()
+{
+	PermanentAttributes.Reset();
+	Super::BeginDestroy();
+}
+
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
 	// Guard condition to ensure we should clear/init for this new Avatar Actor.
@@ -112,7 +118,7 @@ void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatar
 	}
 
 	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults on %s from %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags %d ]."),
-		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(AbilityData), AddedAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num(), TagCount);		
+		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(AbilityData), PermanentAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num(), TagCount);		
 }
 
 void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets)
@@ -143,11 +149,20 @@ void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefa
 			if (IsValid(AttributeTable))
 			{
 				NewAttributeSet->InitFromMetaDataTable(AttributeTable);
-				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
 			}
 
 			AddAttributeSetSubobject(NewAttributeSet);
-			AddedAttributes.Add(NewAttributeSet);
+
+			if (Entry.IsPermanent())
+			{
+				PermanentAttributes.Add(NewAttributeSet);
+				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized permanent Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
+			}
+			else
+			{
+				TemporaryAttributes.Add(NewAttributeSet);
+				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized temporary Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
+			}
 		}
 	}	
 }
@@ -298,8 +313,19 @@ void UNinjaGASAbilitySystemComponent::ResetAbilitySystemComponent()
 		RemoveActiveGameplayEffect(Effect.Handle);
 	}
 
-	RemoveAllSpawnedAttributes();
+	if (PermanentAttributes.IsEmpty())
+	{
+		RemoveAllSpawnedAttributes();
+	}
+	else for (UAttributeSet* AttributeSet: TemporaryAttributes)
+	{
+		RemoveSpawnedAttribute(AttributeSet);
+	}
+	
 	GameplayTagCountContainer.Reset();
+	DefaultAbilityHandles.Reset();
+	DefaultEffectHandles.Reset();
+	TemporaryAttributes.Reset();
 }
 
 void UNinjaGASAbilitySystemComponent::ClearActorInfo()
@@ -582,7 +608,7 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 		}
 	}
 	
-	for (auto It(AddedAttributes.CreateIterator()); It; ++It)
+	for (auto It(TemporaryAttributes.CreateIterator()); It; ++It)
 	{
 		RemoveSpawnedAttribute(*It);
 		It.RemoveCurrent();

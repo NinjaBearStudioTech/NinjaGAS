@@ -10,6 +10,10 @@ class UDataTable;
 class UGameplayAbility;
 class UGameplayEffect;
 
+/**
+ * Determines where the attribute set should be instantiated.
+ * For some case you might want to only apply on server or client.
+ */
 UENUM(BlueprintType)
 enum class EAttributeSetInstantiationScope : uint8
 {
@@ -21,6 +25,20 @@ enum class EAttributeSetInstantiationScope : uint8
 
 	/** This attribute set will be applied in both the server and local client. */
 	Both
+};
+
+/**
+ * What happens to this attribute set when the avatar respawns.
+ * This is only applicable when the ASC in the Player State and the pawn changes.
+ */
+UENUM(BlueprintType)
+enum class EAttributeSetRespawnPolicy : uint8
+{
+	/** This attribute set will be reinitialized when the avatar changes. */
+	Reset,
+
+	/** This attribute set will be kept when the avatar changes. */
+	Keep,
 };
 
 /**
@@ -39,6 +57,10 @@ struct NINJAGAS_API FDefaultAttributeSet
 	/** Scope for this Attribute Set. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
 	EAttributeSetInstantiationScope InstantiationScope = EAttributeSetInstantiationScope::Both;
+
+	/** What to do with the attribute set data when the pawn changes. */
+	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set")
+	EAttributeSetRespawnPolicy RespawnPolicy = EAttributeSetRespawnPolicy::Reset;
 	
 	/** Data table with default attribute values. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Set", meta = (RequiredAssetDataTags = "RowStructure=/Script/GameplayAbilities.AttributeMetaData"))
@@ -63,6 +85,11 @@ struct NINJAGAS_API FDefaultAttributeSet
 	{
 		return InstantiationScope == EAttributeSetInstantiationScope::Local
 			|| InstantiationScope == EAttributeSetInstantiationScope::Both;
+	}
+
+	bool IsPermanent() const
+	{
+		return RespawnPolicy == EAttributeSetRespawnPolicy::Keep;
 	}
 };
 

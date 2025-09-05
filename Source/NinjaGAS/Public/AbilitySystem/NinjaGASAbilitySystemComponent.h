@@ -44,6 +44,7 @@ public:
 	UNinjaGASAbilitySystemComponent();
 
 	// -- Begin Ability System Component implementation
+	virtual void BeginDestroy() override;
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	virtual void ClearActorInfo() override;
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
@@ -178,8 +179,8 @@ protected:
 	 * before assigning new ones from scratch, using the default setup assigned to the new
 	 * avatar, or to this component.
 	 *
-	 * If you don't want to reset the state for any avatar change, then you can set this to
-	 * "false", and call "ResetAbilitySystemComponent" whenever the new avatar activates.
+	 * If you don't want to fully reset the state for any avatar change, then you can set this
+	 * to "false", and call "ResetAbilitySystemComponent" whenever the new avatar activates.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
 	bool bResetStateWhenAvatarChanges;
@@ -237,9 +238,13 @@ private:
 	UPROPERTY()
 	TObjectPtr<const UNinjaGASDataAsset> CurrentAbilitySetup;
 	
-	/** Attribute sets we initialized and are keeping track. */
+	/** Attribute sets we initialized and will keep regardless of respawns. */
 	UPROPERTY()
-	TArray<TObjectPtr<UAttributeSet>> AddedAttributes;
+	TArray<TObjectPtr<UAttributeSet>> PermanentAttributes;
+
+	/** Attribute sets we initialized and will reset when the avatar changes. */
+	UPROPERTY()	
+	TArray<TObjectPtr<UAttributeSet>> TemporaryAttributes;
 	
 	/** All effects we initialized by default. */
 	UPROPERTY()
