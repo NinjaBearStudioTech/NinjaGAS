@@ -5,6 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Runtime/Launch/Resources/Version.h"
+#include "Types/FNinjaAbilityDefaultHandles.h"
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
 
@@ -44,7 +45,6 @@ public:
 	UNinjaGASAbilitySystemComponent();
 
 	// -- Begin Ability System Component implementation
-	virtual void BeginDestroy() override;
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	virtual void ClearActorInfo() override;
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
@@ -195,37 +195,41 @@ protected:
 	bool bEnableAbilityBatchRPC;
 	
 	/**
-	 * Initializes default abilities, effects and attribute sets.
-	 *
-	 * Should only be called when the owner is authoritative. However, calling from
-	 * a client won't have any issues, but it won't do anything due to the internal check.
+	 * Initializes default abilities, effects and attribute sets granted by the owner.
+	 * The initialization for owner defaults only ever happens once, since the owner won't change.
 	 */
-	void InitializeDefaults(const AActor* NewAvatarActor);
+	void InitializeDefaultsFromOwner(const AActor* NewOwner);
 
+	/**
+	 * Initializes default abilities, effects and attribute sets granted by the avatar.
+	 * This will also reset previous defaults granted by a former avatar, if the avatar changes.
+	 */
+	void InitializeDefaultsFromAvatar(const AActor* NewAvatar);
+	
 	/**
 	 * Initializes Abilities from the provided Data Asset.
 	 */
-	void InitializeFromData(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityData);
+	void InitializeFromData(const UNinjaGASDataAsset* AbilityData, FAbilityDefaultHandles& OutHandles);
 	
 	/**
 	 * Initializes Attribute Sets provided by the interface.
 	 */
-	void InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets);
+	void InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets, FAbilityDefaultHandles& OutHandles);
 
 	/**
 	 * Initializes the Gameplay Effects provided by the interface.
 	 */
-	void InitializeGameplayEffects(const TArray<FDefaultGameplayEffect>& GameplayEffects);
+	void InitializeGameplayEffects(const TArray<FDefaultGameplayEffect>& GameplayEffects, FAbilityDefaultHandles& OutHandles);
 
 	/**
 	 * Initializes the Gameplay Abilities provided by the interface.
 	 */
-	void InitializeGameplayAbilities(const TArray<FDefaultGameplayAbility>& GameplayAbilities);
+	void InitializeGameplayAbilities(const TArray<FDefaultGameplayAbility>& GameplayAbilities, FAbilityDefaultHandles& OutHandles);
 
 	/**
 	 * Clears default abilities, effects and attribute sets.
 	 */
-	virtual void ClearDefaults();
+	virtual void ClearDefaults(FAbilityDefaultHandles& Handles, bool bRemovePermanentAttributes = false);
 
 	/**
 	 * Conveniently separates the code that sets the animation to replicate, so it can be further modified.
@@ -234,24 +238,10 @@ protected:
 	
 private:
 
-	/** Actual ability setup used to initialize this ASC. */
-	UPROPERTY()
-	TObjectPtr<const UNinjaGASDataAsset> CurrentAbilitySetup;
-	
-	/** Attribute sets we initialized and will keep regardless of respawns. */
-	UPROPERTY()
-	TArray<TObjectPtr<UAttributeSet>> PermanentAttributes;
+	/** Setup and handles granted by the owner. */
+	FAbilityDefaultHandles OwnerHandles;
 
-	/** Attribute sets we initialized and will reset when the avatar changes. */
-	UPROPERTY()	
-	TArray<TObjectPtr<UAttributeSet>> TemporaryAttributes;
+	/** Setup and handles granted by the avatar. */
+	FAbilityDefaultHandles AvatarHandles;
 	
-	/** All effects we initialized by default. */
-	UPROPERTY()
-	TArray<FActiveGameplayEffectHandle> DefaultEffectHandles;
-	
-	/** All abilities we initialized by default. */
-	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> DefaultAbilityHandles;
-
 };

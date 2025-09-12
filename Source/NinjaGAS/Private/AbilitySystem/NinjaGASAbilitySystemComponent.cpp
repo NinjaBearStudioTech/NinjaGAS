@@ -10,6 +10,7 @@
 #include "Data/NinjaGASDataAsset.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Interfaces/BatchGameplayAbilityInterface.h"
+#include "Types/FNinjaAbilityDefaultHandles.h"
 
 /**
  * CVAR to control the "Play Montage" flow.
@@ -29,74 +30,82 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	SetIsReplicatedByDefault(bIsReplicated);
 
 	bEnableAbilityBatchRPC = true;
-	bResetStateWhenAvatarChanges = true;
-	CurrentAbilitySetup = nullptr;
-}
-
-void UNinjaGASAbilitySystemComponent::BeginDestroy()
-{
-	PermanentAttributes.Reset();
-	Super::BeginDestroy();
+	bResetStateWhenAvatarChanges = false;
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
-	// Guard condition to ensure we should clear/init for this new Avatar Actor.
+	// Guard condition to ensure we should clear/init for a new Avatar Actor.
 	const bool bAvatarHasChanged = AbilityActorInfo && AbilityActorInfo->AvatarActor != InAvatarActor && InAvatarActor != nullptr;
 	
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+	InitializeDefaultsFromOwner(InOwnerActor);
 
-	// Apply the new defaults obtained from the owner's interface.
 	if (bAvatarHasChanged)
 	{
 		if (bResetStateWhenAvatarChanges)
 		{
 			ResetAbilitySystemComponent();	
 		}
-		
-		InitializeDefaults(InAvatarActor);
+
+		InitializeDefaultsFromAvatar(InAvatarActor);
 		OnAbilitySystemAvatarChanged.Broadcast(InAvatarActor);
 	}
 }
 
-void UNinjaGASAbilitySystemComponent::InitializeDefaults(const AActor* NewAvatarActor)
+void UNinjaGASAbilitySystemComponent::InitializeDefaultsFromOwner(const AActor* NewOwner)
 {
-	if (!IsValid(NewAvatarActor))
+	if (!IsValid(NewOwner) || OwnerHandles.IsValid())
 	{
 		return;
 	}
 
-	const IAbilitySystemDefaultsInterface* Defaults = Cast<IAbilitySystemDefaultsInterface>(NewAvatarActor);
-	if (Defaults == nullptr || !Defaults->HasAbilityData())
+	const IAbilitySystemDefaultsInterface* Defaults = Cast<IAbilitySystemDefaultsInterface>(NewOwner);
+	if (!Defaults || !Defaults->HasAbilityData())
 	{
-		// Use the defaults provided by this own class.
 		Defaults = Cast<IAbilitySystemDefaultsInterface>(this);
 	}
 
+	check(Defaults != nullptr);
 	const UNinjaGASDataAsset* AbilityData = Defaults->GetAbilityData();
 	if (IsValid(AbilityData))
 	{
-		ClearDefaults();
-		CurrentAbilitySetup = AbilityData;
-		InitializeFromData(NewAvatarActor, AbilityData);
+		InitializeFromData(AbilityData, OwnerHandles);
 	}
 }
 
-void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatarActor, const UNinjaGASDataAsset* AbilityData)
+void UNinjaGASAbilitySystemComponent::InitializeDefaultsFromAvatar(const AActor* NewAvatar)
+{
+	// Avatar defaults are added on top of the defaults added by the ASC owner.
+	// The new avatar has to be valid, and we need to make sure it's not the owner actor.
+	if (!IsValid(NewAvatar) || NewAvatar == GetOwnerActor())
+	{
+		return;
+	}
+
+	static constexpr bool bRemovePermanentAttributes = true; 
+	ClearDefaults(AvatarHandles, bRemovePermanentAttributes);
+	
+	const IAbilitySystemDefaultsInterface* Defaults = Cast<IAbilitySystemDefaultsInterface>(NewAvatar);
+	if (Defaults && Defaults->HasAbilityData())
+	{
+		const UNinjaGASDataAsset* AbilityData = Defaults->GetAbilityData();
+		if (IsValid(AbilityData))
+		{
+			InitializeFromData(AbilityData, AvatarHandles);
+		}
+	}
+}
+
+void UNinjaGASAbilitySystemComponent::InitializeFromData(const UNinjaGASDataAsset* AbilityData, FAbilityDefaultHandles& OutHandles)
 {
 	if (!IsValid(AbilityData))
 	{
 		return;
 	}
 
-	const AActor* CurrentAvatar = GetAvatarActor();
-	if (NewAvatarActor != CurrentAvatar)
-	{
-		return;
-	}
-	
 	const TArray<FDefaultAttributeSet>& AttributeSets = AbilityData->DefaultAttributeSets;
-	InitializeAttributeSets(AttributeSets);
+	InitializeAttributeSets(AttributeSets, OutHandles);
 
 	int32 TagCount = 0;
 	const bool bIsAuth = IsOwnerActorAuthoritative(); 
@@ -104,10 +113,10 @@ void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatar
 	if (bIsAuth)
 	{
 		const TArray<FDefaultGameplayEffect>& GameplayEffects = AbilityData->DefaultGameplayEffects;
-		InitializeGameplayEffects(GameplayEffects);
+		InitializeGameplayEffects(GameplayEffects, OutHandles);
 
 		const TArray<FDefaultGameplayAbility>& GameplayAbilities = AbilityData->DefaultGameplayAbilities;
-		InitializeGameplayAbilities(GameplayAbilities);
+		InitializeGameplayAbilities(GameplayAbilities, OutHandles);
 
 		const FGameplayTagContainer& InitialGameplayTags = AbilityData->InitialGameplayTags; 
 		if (InitialGameplayTags.IsValid())
@@ -117,11 +126,12 @@ void UNinjaGASAbilitySystemComponent::InitializeFromData(const AActor* NewAvatar
 		}
 	}
 
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults on %s from %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags %d ]."),
-		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(AbilityData), PermanentAttributes.Num(), DefaultEffectHandles.Num(), DefaultAbilityHandles.Num(), TagCount);		
+	OutHandles.CurrentAbilitySetup = AbilityData;
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Initialized ASC defaults on %s from %s: [ Permanent Attribute Sets: %d, Temporary Attribute Sets: %d, Effects: %d, Abilities: %d, Tags %d ]."),
+		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(OutHandles.CurrentAbilitySetup), OutHandles.PermanentAttributes.Num(), OutHandles.TemporaryAttributes.Num(), OutHandles.DefaultEffectHandles.Num(), OutHandles.DefaultAbilityHandles.Num(), TagCount);		
 }
 
-void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets)
+void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefaultAttributeSet>& AttributeSets, FAbilityDefaultHandles& OutHandles)
 {
 	const bool bIsAuth = IsOwnerActorAuthoritative();
 	
@@ -155,25 +165,25 @@ void UNinjaGASAbilitySystemComponent::InitializeAttributeSets(const TArray<FDefa
 
 			if (Entry.IsPermanent())
 			{
-				PermanentAttributes.Add(NewAttributeSet);
+				OutHandles.PermanentAttributes.Add(NewAttributeSet);
 				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized permanent Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
 			}
 			else
 			{
-				TemporaryAttributes.Add(NewAttributeSet);
+				OutHandles.TemporaryAttributes.Add(NewAttributeSet);
 				UE_LOG(LogAbilitySystemComponent, Verbose, TEXT("Initialized temporary Attribute Set %s with %s."), *GetNameSafe(NewAttributeSet), *GetNameSafe(AttributeTable));
 			}
 		}
 	}	
 }
 
-void UNinjaGASAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDefaultGameplayEffect>& GameplayEffects)
+void UNinjaGASAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDefaultGameplayEffect>& GameplayEffects, FAbilityDefaultHandles& OutHandles)
 {
 	const int32 GameplayEffectCount = GameplayEffects.Num(); 
 	if (GameplayEffectCount > 0)
 	{
-		const int32 NewSize = DefaultEffectHandles.Num() + GameplayEffectCount;  
-		DefaultEffectHandles.Reserve(NewSize);
+		const int32 NewSize = OutHandles.DefaultEffectHandles.Num() + GameplayEffectCount;  
+		OutHandles.DefaultEffectHandles.Reserve(NewSize);
 		
 		for (const FDefaultGameplayEffect& Entry : GameplayEffects)
 		{
@@ -181,19 +191,19 @@ void UNinjaGASAbilitySystemComponent::InitializeGameplayEffects(const TArray<FDe
 			FActiveGameplayEffectHandle Handle = ApplyGameplayEffectClassToSelf(GameplayEffectClass, Entry.Level);
 			if (Handle.IsValid() && Handle.WasSuccessfullyApplied())
 			{
-				DefaultEffectHandles.Add(Handle);	
+				OutHandles.DefaultEffectHandles.Add(Handle);	
 			}
 		}
 	}
 }
 
-void UNinjaGASAbilitySystemComponent::InitializeGameplayAbilities(const TArray<FDefaultGameplayAbility>& GameplayAbilities)
+void UNinjaGASAbilitySystemComponent::InitializeGameplayAbilities(const TArray<FDefaultGameplayAbility>& GameplayAbilities, FAbilityDefaultHandles& OutHandles)
 {
 	const int32 GameplayAbilityCount = GameplayAbilities.Num(); 
 	if (GameplayAbilityCount > 0)
 	{
-		const int32 NewSize = DefaultAbilityHandles.Num() + GameplayAbilityCount; 
-		DefaultAbilityHandles.Reserve(NewSize);
+		const int32 NewSize = OutHandles.DefaultAbilityHandles.Num() + GameplayAbilityCount; 
+		OutHandles.DefaultAbilityHandles.Reserve(NewSize);
 		
 		for (const FDefaultGameplayAbility& Entry : GameplayAbilities)
 		{
@@ -201,7 +211,7 @@ void UNinjaGASAbilitySystemComponent::InitializeGameplayAbilities(const TArray<F
 			FGameplayAbilitySpecHandle Handle = GiveAbilityFromClass(GameplayAbilityClass, Entry.Level, Entry.Input);
 			if (Handle.IsValid())
 			{
-				DefaultAbilityHandles.Add(Handle);	
+				OutHandles.DefaultAbilityHandles.Add(Handle);	
 			}
 		}
 	}
@@ -308,29 +318,16 @@ void UNinjaGASAbilitySystemComponent::ResetAbilitySystemComponent()
 	DestroyActiveState();
 	RemoveAllGameplayCues();
 
-	for (const FActiveGameplayEffect& Effect : &ActiveGameplayEffects)
-	{
-		RemoveActiveGameplayEffect(Effect.Handle);
-	}
-
-	if (PermanentAttributes.IsEmpty())
-	{
-		RemoveAllSpawnedAttributes();
-	}
-	else for (UAttributeSet* AttributeSet: TemporaryAttributes)
-	{
-		RemoveSpawnedAttribute(AttributeSet);
-	}
-	
 	GameplayTagCountContainer.Reset();
-	DefaultAbilityHandles.Reset();
-	DefaultEffectHandles.Reset();
-	TemporaryAttributes.Reset();
+
+	static constexpr bool bRemovePermanentAttributes = true;
+	ClearDefaults(OwnerHandles, bRemovePermanentAttributes);
+	ClearDefaults(AvatarHandles, bRemovePermanentAttributes);
 }
 
 void UNinjaGASAbilitySystemComponent::ClearActorInfo()
 {
-	ClearDefaults();
+	ClearDefaults(AvatarHandles);
 	Super::ClearActorInfo();
 }
 
@@ -477,7 +474,7 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 	return Duration;
 }
 
-void UNinjaGASAbilitySystemComponent::CurrentMontageStop(float OverrideBlendOutTime)
+void UNinjaGASAbilitySystemComponent::CurrentMontageStop(const float OverrideBlendOutTime)
 {
 	if (GEnableDefaultPlayMontage)
 	{
@@ -563,20 +560,21 @@ void UNinjaGASAbilitySystemComponent::DeferredSetBaseAttributeValueFromReplicati
 	SetBaseAttributeValueFromReplication(Attribute, NewValue.GetBaseValue(), OldValue);
 }
 
-void UNinjaGASAbilitySystemComponent::ClearDefaults()
+void UNinjaGASAbilitySystemComponent::ClearDefaults(FAbilityDefaultHandles& Handles, const bool bRemovePermanentAttributes)
 {
 	int32 TagCount = 0;
 	int32 AbilityHandleCount = 0;
 	int32 EffectHandleCount = 0;
-	int32 AttributeSetCount = 0;
+	int32 PermanentAttributeSetCount = 0;
+	int32 TemporaryAttributeSetCount = 0;
 
 	const bool bIsAuth = IsOwnerActorAuthoritative(); 
 	if (bIsAuth)
 	{
 		FGameplayTagContainer InitialGameplayTags = FGameplayTagContainer::EmptyContainer;  
-		if (IsValid(CurrentAbilitySetup))
+		if (IsValid(Handles.CurrentAbilitySetup))
 		{
-			InitialGameplayTags = CurrentAbilitySetup->InitialGameplayTags;
+			InitialGameplayTags = Handles.CurrentAbilitySetup->InitialGameplayTags;
 			if (InitialGameplayTags.IsValid())
 			{
 				TagCount = InitialGameplayTags.Num();
@@ -584,7 +582,7 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 			}	
 		}
 	
-		for (auto It(DefaultAbilityHandles.CreateIterator()); It; ++It)
+		for (auto It(Handles.DefaultAbilityHandles.CreateIterator()); It; ++It)
 		{
 			const FGameplayAbilitySpecHandle& Handle = *It;
 			const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
@@ -600,23 +598,33 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults()
 			++AbilityHandleCount;
 		}
 		
-		for (auto It(DefaultEffectHandles.CreateIterator()); It; ++It)
+		for (auto It(Handles.DefaultEffectHandles.CreateIterator()); It; ++It)
 		{
 			RemoveActiveGameplayEffect(*It);
 			It.RemoveCurrent();
 			++EffectHandleCount;
 		}
 	}
-	
-	for (auto It(TemporaryAttributes.CreateIterator()); It; ++It)
+
+	for (auto It(Handles.TemporaryAttributes.CreateIterator()); It; ++It)
 	{
 		RemoveSpawnedAttribute(*It);
 		It.RemoveCurrent();
-		++AttributeSetCount;
+		++TemporaryAttributeSetCount;
 	}
 
-	CurrentAbilitySetup = nullptr;
+	if (bRemovePermanentAttributes)
+	{
+		for (auto It(Handles.PermanentAttributes.CreateIterator()); It; ++It)
+		{
+			RemoveSpawnedAttribute(*It);
+			It.RemoveCurrent();
+			++PermanentAttributeSetCount;
+		}
+	}
 
-	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Cleared Gameplay Elements on %s for %s: [ Attribute Sets: %d, Effects: %d, Abilities: %d, Tags: %d ]."),
-		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(GetAvatarActor()), AttributeSetCount, EffectHandleCount, AbilityHandleCount, TagCount);
+	Handles.CurrentAbilitySetup = nullptr;
+
+	UE_LOG(LogAbilitySystemComponent, Log, TEXT("Cleared Gameplay Elements on %s for %s: [ Permanent Attribute Sets: %d, Temporary Attribute Sets: %d, Effects: %d, Abilities: %d, Tags: %d ]."),
+		bIsAuth ? TEXT("auth") : TEXT("client"), *GetNameSafe(GetAvatarActor()), PermanentAttributeSetCount, TemporaryAttributeSetCount, EffectHandleCount, AbilityHandleCount, TagCount);
 }

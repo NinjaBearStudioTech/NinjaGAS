@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "AbilitySystem/Types/FNinjaAbilityDefaults.h"
+#include "Types/FNinjaAbilityDefaults.h"
 #include "Engine/DataAsset.h"
 #include "NinjaGASDataAsset.generated.h"
 
