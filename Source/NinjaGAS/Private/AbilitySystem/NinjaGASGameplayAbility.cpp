@@ -3,6 +3,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "NinjaGASTags.h"
+#include "Abilities/Tasks/AbilityTask.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 bool UNinjaGASGameplayAbility::IsPassiveAbility() const
@@ -45,4 +46,20 @@ bool UNinjaGASGameplayAbility::HasAbilityTag(FGameplayTag AbilityTag) const
 #else
 	return GetAssetTags().HasTagExact(AbilityTag);
 #endif	
+}
+
+void UNinjaGASGameplayAbility::FinishLatentTasks(const TArray<UAbilityTask*>& Tasks)
+{
+	for (TObjectPtr<UAbilityTask> Task : Tasks)
+	{
+		FinishLatentTask(Task);
+	}
+}
+
+void UNinjaGASGameplayAbility::FinishLatentTask(UAbilityTask* Task)
+{
+	if (IsValid(Task))
+	{
+		Task->EndTask();
+	}		
 }

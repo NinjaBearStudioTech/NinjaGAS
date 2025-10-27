@@ -6,6 +6,8 @@
 #include "Interfaces/BatchGameplayAbilityInterface.h"
 #include "NinjaGASGameplayAbility.generated.h"
 
+class UAbilityTask;
+
 /**
  * Base Ability Class providing all extensions available in the framework. 
  */
@@ -45,5 +47,17 @@ protected:
 	 * Checks for Ability Tags, considering legacy Unreal Engine versions.
 	 */
 	bool HasAbilityTag(FGameplayTag AbilityTag) const;
+
+	/**
+	 * Helper method that can finish an array of latent tasks.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Abilities")
+	static void FinishLatentTasks(const TArray<UAbilityTask*>& Tasks);
+
+	/**
+	 * Helper method that can finish a latent task.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Abilities")
+	static void FinishLatentTask(UAbilityTask* Task);
 	
 };
