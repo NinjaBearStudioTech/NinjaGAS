@@ -6,7 +6,7 @@
 #include "Engine/CancellableAsyncAction.h"
 #include "NinjaGASAction_WaitForAbilitySystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAbilityAsyncActionSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAbilitySystemAsyncActionSignature);
 
 /**
  * Waits for an Ability System to become available and initialized.
@@ -21,15 +21,15 @@ public:
 
 	/** The task has completed and the ASC is available. */
 	UPROPERTY(BlueprintAssignable)
-	FAbilityAsyncActionSignature OnCompleted;
+	FAbilitySystemAsyncActionSignature OnCompleted;
 
 	/** The action has failed. */
 	UPROPERTY(BlueprintAssignable)
-	FAbilityAsyncActionSignature OnCancelled;
+	FAbilitySystemAsyncActionSignature OnCancelled;
 
 	/** The action has timed-out. */
 	UPROPERTY(BlueprintAssignable)
-	FAbilityAsyncActionSignature OnTimedOut;
+	FAbilitySystemAsyncActionSignature OnTimedOut;
 
 	/**
 	 * Creates the Action to wait for an Ability System Component in an Actor.

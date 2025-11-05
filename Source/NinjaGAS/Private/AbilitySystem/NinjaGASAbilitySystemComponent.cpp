@@ -30,7 +30,7 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	SetIsReplicatedByDefault(bIsReplicated);
 
 	bEnableAbilityBatchRPC = true;
-	bResetStateWhenAvatarChanges = false;
+	bResetStateWhenAvatarChanges = true;
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -122,7 +122,11 @@ void UNinjaGASAbilitySystemComponent::InitializeFromData(const UNinjaGASDataAsse
 		if (InitialGameplayTags.IsValid())
 		{
 			TagCount = InitialGameplayTags.Num();
+			#if (ENGINE_MAJOR_VERSION > 5) || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7)
+			AddLooseGameplayTags(InitialGameplayTags);
+			#else
 			AddReplicatedLooseGameplayTags(InitialGameplayTags);
+			#endif
 		}
 	}
 
@@ -506,7 +510,7 @@ void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityR
 	const uint8 PlayInstanceId = MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0;
 	const uint8 SectionIdToPlay = NewMontageToPlay->GetSectionIndex(StartSectionName) + 1;
 	
-#if ENGINE_MINOR_VERSION == 3
+#if (ENGINE_MAJOR_VERSION > 5) || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 3)
 	
 	MutableRepAnimMontageInfo.AnimMontage = NewMontageToPlay;
 	MutableRepAnimMontageInfo.PlayInstanceId = PlayInstanceId;
@@ -517,7 +521,7 @@ void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityR
 		MutableRepAnimMontageInfo.SectionIdToPlay = SectionIdToPlay;
 	}
 	
-#elif ENGINE_MINOR_VERSION > 3
+#elif (ENGINE_MAJOR_VERSION > 5) || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 3)
 
 	UAnimSequenceBase* Animation = NewMontageToPlay;
 	if (NewMontageToPlay->IsDynamicMontage())
@@ -578,7 +582,12 @@ void UNinjaGASAbilitySystemComponent::ClearDefaults(FAbilityDefaultHandles& Hand
 			if (InitialGameplayTags.IsValid())
 			{
 				TagCount = InitialGameplayTags.Num();
-				RemoveReplicatedLooseGameplayTags(InitialGameplayTags);	
+
+				#if (ENGINE_MAJOR_VERSION > 5) || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7)
+				RemoveLooseGameplayTags(InitialGameplayTags);
+				#else
+				RemoveReplicatedLooseGameplayTags(InitialGameplayTags);
+				#endif
 			}	
 		}
 	

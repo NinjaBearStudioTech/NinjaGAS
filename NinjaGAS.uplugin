@@ -1,7 +1,7 @@
 ﻿{
 	"FileVersion": 3,
 	"Version": 5,
-	"VersionName": "1.9.9",
+	"VersionName": "1.10.10",
 	"FriendlyName": "NinjaGAS",
 	"Description": "Base configuration and utility for the Gameplay Ability System (GAS).",
 	"Category": "Gameplay",
