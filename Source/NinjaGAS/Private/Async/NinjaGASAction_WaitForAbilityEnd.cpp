@@ -3,8 +3,11 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "Engine/Engine.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
 
-UNinjaGASAction_WaitForAbilityEnd* UNinjaGASAction_WaitForAbilityEnd::CreateAction(AActor* AbilityOwner, FGameplayTagQuery AbilityCriteria)
+UNinjaGASAction_WaitForAbilityEnd* UNinjaGASAction_WaitForAbilityEnd::CreateAction(AActor* AbilityOwner, const FGameplayTagQuery AbilityCriteria)
 {
 	const UWorld* World = GEngine->GetWorldFromContextObject(AbilityOwner, EGetWorldErrorMode::ReturnNull);
 	if (!IsValid(World))
@@ -18,7 +21,7 @@ UNinjaGASAction_WaitForAbilityEnd* UNinjaGASAction_WaitForAbilityEnd::CreateActi
 		return nullptr;
 	}
 
-	UNinjaGASAction_WaitForAbilityEnd* NewAction = NewObject<UNinjaGASAction_WaitForAbilityEnd>(GetTransientPackage(), StaticClass());
+	UNinjaGASAction_WaitForAbilityEnd* NewAction = NewObject<UNinjaGASAction_WaitForAbilityEnd>(AbilityOwner, StaticClass());
 	NewAction->AbilitySystemPtr = AbilityComponent;
 	NewAction->AbilityCriteria = AbilityCriteria;
 	NewAction->RegisterWithGameInstance(World->GetGameInstance());
