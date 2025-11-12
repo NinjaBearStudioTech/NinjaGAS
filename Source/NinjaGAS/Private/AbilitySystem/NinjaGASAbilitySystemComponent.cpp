@@ -30,7 +30,7 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	SetIsReplicatedByDefault(bIsReplicated);
 
 	bEnableAbilityBatchRPC = true;
-	bResetStateWhenAvatarChanges = true;
+	bResetStateWhenAvatarChanges = false;
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
