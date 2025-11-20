@@ -11,6 +11,7 @@
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Interfaces/BatchGameplayAbilityInterface.h"
 #include "Types/FNinjaAbilityDefaultHandles.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 /**
  * CVAR to control the "Play Montage" flow.
@@ -476,6 +477,52 @@ float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAb
 	}
 
 	return Duration;
+}
+
+float UNinjaGASAbilitySystemComponent::PlayMontageSimulated(UAnimMontage* Montage, const float InPlayRate, FName StartSectionName)
+{
+	float Duration = -1.f;
+	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
+	if (AnimInstance && Montage)
+	{
+		Duration = AnimInstance->Montage_Play(Montage, InPlayRate);
+		if (Duration > 0.f)
+		{
+			LocalAnimMontageInfo.AnimMontage = Montage;
+		}
+	}
+
+	return Duration;
+}
+
+void UNinjaGASAbilitySystemComponent::CurrentMontageJumpToSection(const FName SectionName)
+{
+	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
+	if ((SectionName != NAME_None) && AnimInstance && LocalAnimMontageInfo.AnimMontage)
+	{
+		AnimInstance->Montage_JumpToSection(SectionName, LocalAnimMontageInfo.AnimMontage);
+		if (ShouldRecordMontageReplication())
+		{
+			FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
+
+			MutableRepAnimMontageInfo.SectionIdToPlay = 0;
+			if (MutableRepAnimMontageInfo.Animation)
+			{
+				if (const UAnimMontage* RepAnimMontage = Cast<UAnimMontage>(MutableRepAnimMontageInfo.Animation))
+				{
+					MutableRepAnimMontageInfo.SectionIdToPlay = RepAnimMontage->GetSectionIndex(SectionName) + 1;
+				}
+			}
+
+			AnimMontage_UpdateReplicatedData();
+		}
+		
+		if (!IsOwnerActorAuthoritative())
+		{	
+			UAnimSequenceBase* Animation = LocalAnimMontageInfo.AnimMontage->IsDynamicMontage() ? LocalAnimMontageInfo.AnimMontage->GetFirstAnimReference() : LocalAnimMontageInfo.AnimMontage.Get();
+			ServerCurrentMontageJumpToSectionName(Animation, SectionName);
+		}
+	}
 }
 
 void UNinjaGASAbilitySystemComponent::CurrentMontageStop(const float OverrideBlendOutTime)

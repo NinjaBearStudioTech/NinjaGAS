@@ -50,7 +50,9 @@ public:
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
 	virtual bool ShouldDoServerAbilityRPCBatch() const override;
-	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f) override;
+	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds) override;
+	virtual float PlayMontageSimulated(UAnimMontage* Montage, float InPlayRate, FName StartSectionName) override;
+	virtual void CurrentMontageJumpToSection(FName SectionName) override;
 	virtual void CurrentMontageStop(float OverrideBlendOutTime) override;
 	// -- End Ability System Component implementation
 
