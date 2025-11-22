@@ -1,0 +1,66 @@
+Copyright (c) Ninja Bear Studio.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to use,
+modify, merge, publish, distribute, sublicense, and/or sell derived works of
+the Software, subject to the following conditions:
+
+1. Attribution Requirement  
+   Any use, distribution, or inclusion of this Software in a game, plugin,
+   tool, sample project, or any other product must include visible credit to:
+       "Ninja Bear Studio"  
+   in the product documentation, about screen, credits menu, or equivalent
+   acknowledgement area.
+
+2. Redistribution  
+   Redistribution of the Software in its original or modified form is allowed,
+   provided that this license text is included and attribution is maintained.
+   You may NOT claim authorship of the original Software.
+
+3. No Charge for the Software  
+   You may not sell the Software itself in its original or minimally modified
+   form. You may, however, sell products or projects that use or integrate the
+   Software.
+
+4. Warranty Disclaimer  
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+   NINJA BEAR STUDIO BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY.
+
+-------------------------------------------------------------------------------
+CONTRIBUTION LICENSE AGREEMENT
+-------------------------------------------------------------------------------
+
+By submitting code, pull requests, documentation, examples, or any other
+material (“Contribution”) to this repository, you agree to the following terms:
+
+A. You grant Ninja Bear Studio a perpetual, irrevocable, worldwide,
+   royalty-free, sublicensable license to use, modify, reproduce, distribute,
+   publicly display, commercially sell, and create derivative works of your
+   Contribution as part of this Software or any related products.
+
+B. You agree that no compensation, royalties, revenue share, or payment of any
+   kind is or will ever be owed to you for your Contribution.
+
+C. You represent that your Contribution is your original work, or that you have
+   the necessary rights to submit it, and that it does not include any code or
+   assets that violate copyright, trademarks, patents, or licenses of third
+   parties. You also agree not to submit code under GPL, LGPL, AGPL, or any
+   other copyleft license.
+
+D. You retain copyright to your Contribution, but you permanently license it to
+   Ninja Bear Studio under the terms stated above. You may not revoke this
+   license once the Contribution has been submitted.
+
+E. Ninja Bear Studio is not required to include attribution, credits, or
+   authorship notices for Contributions unless it chooses to do so.
+
+-------------------------------------------------------------------------------
+SUMMARY
+-------------------------------------------------------------------------------
+- You may freely use the plugin in commercial or non-commercial projects.
+- You must credit "Ninja Bear Studio" in your product’s documentation/credits.
+- You may redistribute or modify the plugin, but you must preserve attribution.
+- PR contributors give Ninja Bear Studio full commercial rights without royalties.
+- Contributions are permanent and cannot be withdrawn.
