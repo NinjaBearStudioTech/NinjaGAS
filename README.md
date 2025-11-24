@@ -16,3 +16,9 @@ You can find more information the in the [Documentation Portal](https://tech.nin
 
 - Simplicity: Allows you to use the Gameplay Ability System as fast as possible.
 - Common Practices: Meant to incorporate popular practices and utilities for the ASC.
+
+## Additional Credits
+
+- [https://github.com/tranek](https://github.com/tranek)
+- [https://github.com/vorixo](https://github.com/vorixo)
+- [https://github.com/Vaei](https://github.com/Vaei)
