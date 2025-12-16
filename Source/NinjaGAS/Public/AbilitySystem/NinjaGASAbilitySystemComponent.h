@@ -1,4 +1,12 @@
-﻿// Ninja Bear Studio Inc. 2024, all rights reserved.
+﻿// Copyright (c) Ninja Bear Studio Inc.
+// 
+// This file incorporates portions of code from:
+//   Copyright (c) Dan Kestranek (https://github.com/tranek)
+//   Copyright (c) Jared Taylor (https://github.com/Vaei/)
+//
+// The incorporated portions are licensed under the MIT License.
+// The full MIT license text is included in THIRD_PARTY_NOTICES.md.
+//
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,8 +17,84 @@
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
 
+struct FMontageBlendSettings;
+
 class UNinjaGASDataAsset;
 class UAnimMontage;
+class USkeletalMeshComponent;
+
+/**
+ * Data about montages that were played locally (all montages in case of server. predictive montages in case of client). Never replicated directly.
+ */
+USTRUCT()
+struct NINJAGAS_API FGameplayAbilityLocalAnimMontageForMesh
+{
+	GENERATED_BODY();
+
+	UPROPERTY()
+	USkeletalMeshComponent* Mesh;
+
+	UPROPERTY()
+	FGameplayAbilityLocalAnimMontage LocalMontageInfo;
+
+	FGameplayAbilityLocalAnimMontageForMesh(USkeletalMeshComponent* InMesh = nullptr)
+		: Mesh(InMesh)
+	{
+	}
+
+	FGameplayAbilityLocalAnimMontageForMesh(USkeletalMeshComponent* InMesh, const FGameplayAbilityLocalAnimMontage& InLocalMontageInfo)
+		: Mesh(InMesh), LocalMontageInfo(InLocalMontageInfo)
+	{
+	}
+};
+
+USTRUCT()
+struct NINJAGAS_API FPlayTagGameplayAbilityRepAnimMontage : public FGameplayAbilityRepAnimMontage
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	bool bOverrideBlendIn;
+
+	UPROPERTY()
+	FMontageBlendSettings BlendInOverride;
+
+	FPlayTagGameplayAbilityRepAnimMontage()
+		: bOverrideBlendIn(false)
+		, BlendInOverride({})
+	{}
+	
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+};
+
+/**
+ * Data about montages that is replicated to simulated clients.
+ */
+USTRUCT()
+struct NINJAGAS_API FGameplayAbilityRepAnimMontageForMesh
+{
+	GENERATED_BODY();
+
+	UPROPERTY()
+	USkeletalMeshComponent* Mesh;
+
+	UPROPERTY()
+	FPlayTagGameplayAbilityRepAnimMontage RepMontageInfo;
+
+	FGameplayAbilityRepAnimMontageForMesh(USkeletalMeshComponent* InMesh = nullptr)
+		: Mesh(InMesh)
+	{
+	}
+};
+
+template<>
+struct TStructOpsTypeTraits<FPlayTagGameplayAbilityRepAnimMontage> : public TStructOpsTypeTraitsBase2<FPlayTagGameplayAbilityRepAnimMontage>
+{
+	enum
+	{
+		WithNetSerializer = true,
+	};
+};
 
 /**
  * Specialized version of the Ability System Component.
@@ -27,6 +111,7 @@ class UAnimMontage;
  * 
  * - https://github.com/tranek/GASDocumentation
  * - https://vorixo.github.io/devtricks/lazy-loading-asc/
+ * - https://github.com/Vaei/PlayMontagePro/
  */
 UCLASS(ClassGroup=(NinjaGAS), meta=(BlueprintSpawnableComponent))
 class NINJAGAS_API UNinjaGASAbilitySystemComponent : public UAbilitySystemComponent, public IAbilitySystemDefaultsInterface
@@ -50,10 +135,9 @@ public:
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
 	virtual bool ShouldDoServerAbilityRPCBatch() const override;
-	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds) override;
-	virtual float PlayMontageSimulated(UAnimMontage* Montage, float InPlayRate, FName StartSectionName) override;
-	virtual void CurrentMontageJumpToSection(FName SectionName) override;
-	virtual void CurrentMontageStop(float OverrideBlendOutTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool GetShouldTick() const override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	// -- End Ability System Component implementation
 
 	// -- Begin Ability System Defaults implementation
@@ -233,11 +317,6 @@ protected:
 	 */
 	virtual void ClearDefaults(FAbilityDefaultHandles& Handles, bool bRemovePermanentAttributes = false);
 
-	/**
-	 * Conveniently separates the code that sets the animation to replicate, so it can be further modified.
-	 */
-	virtual void SetReplicatedMontageInfo(FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo, UAnimMontage* NewMontageToPlay, const FName& StartSectionName);
-	
 private:
 
 	/** Setup and handles granted by the owner. */
@@ -245,5 +324,127 @@ private:
 
 	/** Setup and handles granted by the avatar. */
 	FAbilityDefaultHandles AvatarHandles;
+
+#pragma region AnimationMontages
+public:
 	
+	// ----------------------------------------------------------------------------------------------------------------
+	//	AnimMontage Support for multiple USkeletalMeshComponents on the AvatarActor.
+	//  Only one ability can be animating at a time though?
+	// ----------------------------------------------------------------------------------------------------------------		
+	
+	/** 
+	 * Plays a montage and handles replication and prediction based on passed in ability/activation info 
+	 * 
+	 * Marked as UFUNCTION so it can be seen by a reflection system, in case we want to dynamically swap 
+	 * between this and the default Ability System Component, based on whichever is currently available. 
+	 */
+	UFUNCTION()
+	virtual float PlayMontageForMesh(UGameplayAbility* AnimatingAbility, USkeletalMeshComponent* InMesh, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, bool bOverrideBlendIn, const FMontageBlendSettings& BlendInOverride, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.f, bool bReplicateMontage = true);
+
+	// Plays a montage without updating replication/prediction structures. Used by simulated proxies when replication tells them to play a montage.
+	virtual float PlayMontageSimulatedForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* Montage, float InPlayRate, bool bOverrideBlendIn, const FMontageBlendSettings& BlendInOverride, float StartTimeSeconds = 0.f, FName StartSectionName = NAME_None);
+
+	// Stops whatever montage is currently playing. Expectation is caller should only be stopping it if they are the current animating ability (or have good reason not to check)
+	virtual void CurrentMontageStopForMesh(USkeletalMeshComponent* InMesh, float OverrideBlendOutTime = -1.0f);
+
+	// Stops all montages currently playing
+	virtual void StopAllCurrentMontages(float OverrideBlendOutTime = -1.0f);
+
+	// Stops current montage if it's the one given as the Montage param
+	virtual void StopMontageIfCurrentForMesh(USkeletalMeshComponent* InMesh, const UAnimMontage& Montage, float OverrideBlendOutTime = -1.0f);
+
+	// Clear the animating ability that is passed in, if it's still currently animating
+	virtual void ClearAnimatingAbilityForAllMeshes(UGameplayAbility* Ability);
+
+	// Jumps current montage to given section. Expectation is caller should only be stopping it if they are the current animating ability (or have good reason not to check)
+	virtual void CurrentMontageJumpToSectionForMesh(USkeletalMeshComponent* InMesh, FName SectionName);
+
+	// Sets current montages next section name. Expectation is caller should only be stopping it if they are the current animating ability (or have good reason not to check)
+	virtual void CurrentMontageSetNextSectionNameForMesh(USkeletalMeshComponent* InMesh, FName FromSectionName, FName ToSectionName);
+
+	// Sets current montage's play rate
+	virtual void CurrentMontageSetPlayRateForMesh(USkeletalMeshComponent* InMesh, float InPlayRate);
+
+	// Returns true if the passed in ability is the current animating ability
+	bool IsAnimatingAbilityForAnyMesh(const UGameplayAbility* Ability) const;
+
+	// Returns the current animating ability
+	UGameplayAbility* GetAnimatingAbilityFromAnyMesh();
+
+	// Returns the current animating ability
+	UGameplayAbility* GetAnimatingAbilityFromMesh(USkeletalMeshComponent* InMesh);
+
+	// Returns montages that are currently playing
+	TArray<UAnimMontage*> GetCurrentMontages() const;
+
+	// Returns the montage that is playing for the mesh
+	UAnimMontage* GetCurrentMontageForMesh(USkeletalMeshComponent* InMesh);
+
+	// Get SectionID of currently playing AnimMontage
+	int32 GetCurrentMontageSectionIDForMesh(USkeletalMeshComponent* InMesh);
+
+	// Get SectionName of currently playing AnimMontage
+	FName GetCurrentMontageSectionNameForMesh(USkeletalMeshComponent* InMesh);
+
+	// Get length in time of current section
+	float GetCurrentMontageSectionLengthForMesh(USkeletalMeshComponent* InMesh);
+
+	// Returns amount of time left in current section
+	float GetCurrentMontageSectionTimeLeftForMesh(USkeletalMeshComponent* InMesh);		
+	
+protected:
+	
+	UPROPERTY()
+	bool bPendingMontageRepForMesh;
+	
+	/** 
+	 * Data structure for montages that were instigated locally (everything if server, predictive if client. replicated if simulated proxy).
+	 * Will be max one element per skeletal mesh on the AvatarActor.
+	 */
+	UPROPERTY()
+	TArray<FGameplayAbilityLocalAnimMontageForMesh> LocalAnimMontageInfoForMeshes;
+	
+	/** 
+	 * Data structure for replicating montage info to simulated clients
+	 * Will be max one element per skeletal mesh on the AvatarActor
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_ReplicatedAnimMontageForMesh)
+	TArray<FGameplayAbilityRepAnimMontageForMesh> RepAnimMontageInfoForMeshes;	
+
+	// Finds the existing FGameplayAbilityLocalAnimMontageForMesh for the mesh or creates one if it doesn't exist
+	FGameplayAbilityLocalAnimMontageForMesh& GetLocalAnimMontageInfoForMesh(USkeletalMeshComponent* InMesh);
+	
+	// Finds the existing FGameplayAbilityRepAnimMontageForMesh for the mesh or creates one if it doesn't exist
+	FGameplayAbilityRepAnimMontageForMesh& GetGameplayAbilityRepAnimMontageForMesh(USkeletalMeshComponent* InMesh);
+
+	// Called when a prediction key that played a montage is rejected
+	virtual void OnPredictiveMontageRejectedForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* PredictiveMontage);
+
+	// Copy LocalAnimMontageInfo into RepAnimMontageInfo
+	void AnimMontage_UpdateReplicatedDataForMesh(USkeletalMeshComponent* InMesh);
+	void AnimMontage_UpdateReplicatedDataForMesh(FGameplayAbilityRepAnimMontageForMesh& OutRepAnimMontageInfo);
+
+	// Copy over playing flags for duplicate animation data
+	void AnimMontage_UpdateForcedPlayFlagsForMesh(FGameplayAbilityRepAnimMontageForMesh& OutRepAnimMontageInfo);	
+
+	UFUNCTION()
+	virtual void OnRep_ReplicatedAnimMontageForMesh();
+
+	// Returns true if we are ready to handle replicated montage information
+	virtual bool IsReadyForReplicatedMontageForMesh();
+	
+	// RPC function called from CurrentMontageSetNextSectionName, replicates to other clients
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerCurrentMontageSetNextSectionNameForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* ClientAnimMontage, float ClientPosition, FName SectionName, FName NextSectionName);
+
+	// RPC function called from CurrentMontageJumpToSection, replicates to other clients
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerCurrentMontageJumpToSectionNameForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* ClientAnimMontage, FName SectionName);
+
+	// RPC function called from CurrentMontageSetPlayRate, replicates to other clients
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerCurrentMontageSetPlayRateForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* ClientAnimMontage, float InPlayRate);
+	
+#pragma endregion
 };

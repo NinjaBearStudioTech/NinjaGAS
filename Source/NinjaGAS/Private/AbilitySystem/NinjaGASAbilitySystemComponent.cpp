@@ -1,4 +1,12 @@
-﻿// Ninja Bear Studio Inc. 2024, all rights reserved.
+﻿// Copyright (c) Ninja Bear Studio Inc.
+// 
+// This file incorporates portions of code from:
+//   Copyright (c) Dan Kestranek (https://github.com/tranek)
+//   Copyright (c) Jared Taylor (https://github.com/Vaei/)
+//
+// The incorporated portions are licensed under the MIT License.
+// The full MIT license text is included in THIRD_PARTY_NOTICES.md.
+//
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
 
 #include "AbilitySystemGlobals.h"
@@ -10,26 +18,30 @@
 #include "Data/NinjaGASDataAsset.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Interfaces/BatchGameplayAbilityInterface.h"
+#include "Net/UnrealNetwork.h"
 #include "Types/FNinjaAbilityDefaultHandles.h"
 #include "Runtime/Launch/Resources/Version.h"
 
-/**
- * CVAR to control the "Play Montage" flow.
- * Example: ninjagas.EnableDefaultPlayMontage true
- */
-static bool GEnableDefaultPlayMontage = false;
-static FAutoConsoleVariableRef CVarEnableDefaultPlayMontage(
-	TEXT("ninjagas.EnableDefaultPlayMontage"),
-	GEnableDefaultPlayMontage,
-	TEXT("Enables or disables the PlayMontage default behavior."),
-	ECVF_Default
-);
+bool FPlayTagGameplayAbilityRepAnimMontage::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	FGameplayAbilityRepAnimMontage::NetSerialize(Ar, Map, bOutSuccess);
+
+	Ar << bOverrideBlendIn;
+	Ar << BlendInOverride.Blend.BlendTime;
+	Ar << BlendInOverride.Blend.BlendOption;
+	Ar << BlendInOverride.Blend.CustomCurve;
+	Ar << BlendInOverride.BlendMode;
+	Ar << BlendInOverride.BlendProfile;
+	
+	return true;
+}
 
 UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 {
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
 
+	bPendingMontageRepForMesh = false;
 	bEnableAbilityBatchRPC = true;
 	bResetStateWhenAvatarChanges = false;
 }
@@ -37,7 +49,7 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
 	// Guard condition to ensure we should clear/init for a new Avatar Actor.
-	const bool bAvatarHasChanged = AbilityActorInfo && AbilityActorInfo->AvatarActor != InAvatarActor && InAvatarActor != nullptr;
+	const bool bAvatarHasChanged = AbilityActorInfo  && AbilityActorInfo->AvatarActor != InAvatarActor && InAvatarActor != nullptr;
 	
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 	InitializeDefaultsFromOwner(InOwnerActor);
@@ -375,6 +387,39 @@ bool UNinjaGASAbilitySystemComponent::ShouldDoServerAbilityRPCBatch() const
 	return bEnableAbilityBatchRPC;
 }
 
+void UNinjaGASAbilitySystemComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, RepAnimMontageInfoForMeshes);
+}
+
+bool UNinjaGASAbilitySystemComponent::GetShouldTick() const
+{
+	for (const FGameplayAbilityRepAnimMontageForMesh& RepMontageInfo : RepAnimMontageInfoForMeshes)
+	{
+		const bool bHasReplicatedMontageInfoToUpdate = (IsOwnerActorAuthoritative() && RepMontageInfo.RepMontageInfo.IsStopped == false);
+
+		if (bHasReplicatedMontageInfoToUpdate)
+		{
+			return true;
+		}
+	}
+	return Super::GetShouldTick();
+}
+
+void UNinjaGASAbilitySystemComponent::TickComponent(float const DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	if (IsOwnerActorAuthoritative())
+	{
+		for (const FGameplayAbilityLocalAnimMontageForMesh& MontageInfo : LocalAnimMontageInfoForMeshes)
+		{
+			AnimMontage_UpdateReplicatedDataForMesh(MontageInfo.Mesh);
+		}
+	}
+	
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
 UAnimInstance* UNinjaGASAbilitySystemComponent::GetAnimInstanceFromActorInfo() const
 {
 	if (!AbilityActorInfo.IsValid())
@@ -391,205 +436,6 @@ UAnimInstance* UNinjaGASAbilitySystemComponent::GetAnimInstanceFromActorInfo() c
 
 	// Otherwise, let the getter method try to figure out the animation instance.
 	return ActorInfo->GetAnimInstance();
-}
-
-float UNinjaGASAbilitySystemComponent::PlayMontage(UGameplayAbility* AnimatingAbility,
-	const FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, const float InPlayRate, const FName StartSectionName,
-	const float StartTimeSeconds)
-{
-	if (GEnableDefaultPlayMontage)
-	{
-		// Always useful to still allow the default flow, if there are some meaningful changes in the core system
-		// that were not yet reflect in this custom implementation. Can be enabled with CVar "GEnableDefaultPlayMontage".
-		//
-		return Super::PlayMontage(AnimatingAbility, ActivationInfo, Montage, InPlayRate, StartSectionName, StartTimeSeconds);
-	}
-	
-	float Duration = -1.f;
-
-	// This method was re-written just to ensure that the Animation Instance is retrieved from the Actor Info
-	// by default, but also, other scenarios can be supported. Biggest example being an IK Runtime Retarget.
-	//
-	// This virtual "GetAnimInstanceFromActorInfo" provides some flexibility on how the Anim Instance is
-	// retrieved. It can be extended in projects that should support IK Runtime Retargets and also traditional
-	// Anim Instances set in the Actor Info. 
-	//
-	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
-	if (AnimInstance && Montage)
-	{
-		Duration = AnimInstance->Montage_Play(Montage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
-		if (Duration > 0.f)
-		{
-			if (Montage->HasRootMotion() && AnimInstance->GetOwningActor())
-			{
-				UE_LOG(LogRootMotion, Log, TEXT("UAbilitySystemComponent::PlayMontage %s, Role: %s")
-					, *GetNameSafe(Montage)
-					, *UEnum::GetValueAsString(TEXT("Engine.ENetRole"), AnimInstance->GetOwningActor()->GetLocalRole())
-					);
-			}
-
-			LocalAnimMontageInfo.AnimMontage = Montage;
-			LocalAnimMontageInfo.AnimatingAbility = AnimatingAbility;
-			LocalAnimMontageInfo.PlayInstanceId = (LocalAnimMontageInfo.PlayInstanceId < UINT8_MAX ? LocalAnimMontageInfo.PlayInstanceId + 1 : 0);
-			
-			if (AnimatingAbility)
-			{
-				AnimatingAbility->SetCurrentMontage(Montage);
-			}
-			
-			// Start at a given Section.
-			if (StartSectionName != NAME_None)
-			{
-				AnimInstance->Montage_JumpToSection(StartSectionName, Montage);
-			}
-
-			// Replicate for non-owners and for replay recordings
-			// The data we set from GetRepAnimMontageInfo_Mutable() is used both by the server to replicate to clients and by clients to record replays.
-			// We need to set this data for recording clients because there exists network configurations where an abilities montage data will not replicate to some clients (for example: if the client is an autonomous proxy.)
-			if (ShouldRecordMontageReplication())
-			{
-				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
-				SetReplicatedMontageInfo(MutableRepAnimMontageInfo, Montage, StartSectionName);
-
-				// Update parameters that change during Montage lifetime.
-				AnimMontage_UpdateReplicatedData();
-			}
-
-			// Replicate to non-owners
-			if (IsOwnerActorAuthoritative())
-			{
-				// Force net update on our avatar actor.
-				if (AbilityActorInfo->AvatarActor != nullptr)
-				{
-					AbilityActorInfo->AvatarActor->ForceNetUpdate();
-				}
-			}
-			else
-			{
-				// If this prediction key is rejected, we need to end the preview
-				FPredictionKey PredictionKey = GetPredictionKeyForNewAction();
-				if (PredictionKey.IsValidKey())
-				{
-					PredictionKey.NewRejectedDelegate().BindUObject(this, &ThisClass::OnPredictiveMontageRejected, Montage);
-				}
-			}
-		}
-	}
-
-	return Duration;
-}
-
-float UNinjaGASAbilitySystemComponent::PlayMontageSimulated(UAnimMontage* Montage, const float InPlayRate, FName StartSectionName)
-{
-	float Duration = -1.f;
-	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
-	if (AnimInstance && Montage)
-	{
-		Duration = AnimInstance->Montage_Play(Montage, InPlayRate);
-		if (Duration > 0.f)
-		{
-			LocalAnimMontageInfo.AnimMontage = Montage;
-		}
-	}
-
-	return Duration;
-}
-
-void UNinjaGASAbilitySystemComponent::CurrentMontageJumpToSection(const FName SectionName)
-{
-	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
-	if ((SectionName != NAME_None) && AnimInstance && LocalAnimMontageInfo.AnimMontage)
-	{
-		AnimInstance->Montage_JumpToSection(SectionName, LocalAnimMontageInfo.AnimMontage);
-		if (ShouldRecordMontageReplication())
-		{
-			FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
-
-			MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-			if (MutableRepAnimMontageInfo.Animation)
-			{
-				if (const UAnimMontage* RepAnimMontage = Cast<UAnimMontage>(MutableRepAnimMontageInfo.Animation))
-				{
-					MutableRepAnimMontageInfo.SectionIdToPlay = RepAnimMontage->GetSectionIndex(SectionName) + 1;
-				}
-			}
-
-			AnimMontage_UpdateReplicatedData();
-		}
-		
-		if (!IsOwnerActorAuthoritative())
-		{	
-			UAnimSequenceBase* Animation = LocalAnimMontageInfo.AnimMontage->IsDynamicMontage() ? LocalAnimMontageInfo.AnimMontage->GetFirstAnimReference() : LocalAnimMontageInfo.AnimMontage.Get();
-			ServerCurrentMontageJumpToSectionName(Animation, SectionName);
-		}
-	}
-}
-
-void UNinjaGASAbilitySystemComponent::CurrentMontageStop(const float OverrideBlendOutTime)
-{
-	if (GEnableDefaultPlayMontage)
-	{
-		// Always useful to still allow the default flow, if there are some meaningful changes in the core system
-		// that were not yet reflect in this custom implementation. Can be enabled with CVar "GEnableDefaultPlayMontage".
-		//
-		Super::CurrentMontageStop(OverrideBlendOutTime);
-	}
-
-	UAnimInstance* AnimInstance = GetAnimInstanceFromActorInfo();
-
-	const UAnimMontage* MontageToStop = LocalAnimMontageInfo.AnimMontage;
-	const bool bShouldStopMontage = AnimInstance && MontageToStop && !AnimInstance->Montage_GetIsStopped(MontageToStop);
-
-	if (bShouldStopMontage)
-	{
-		const float BlendOutTime = (OverrideBlendOutTime >= 0.0f ? OverrideBlendOutTime : MontageToStop->BlendOut.GetBlendTime());
-		AnimInstance->Montage_Stop(BlendOutTime, MontageToStop);
-
-		if (IsOwnerActorAuthoritative())
-		{
-			AnimMontage_UpdateReplicatedData();
-		}
-	}
-}
-
-void UNinjaGASAbilitySystemComponent::SetReplicatedMontageInfo(FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo, UAnimMontage* NewMontageToPlay, const FName& StartSectionName)
-{
-	const uint8 PlayInstanceId = MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0;
-	const uint8 SectionIdToPlay = NewMontageToPlay->GetSectionIndex(StartSectionName) + 1;
-	
-#if (ENGINE_MAJOR_VERSION > 5) || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 3)
-	
-	MutableRepAnimMontageInfo.AnimMontage = NewMontageToPlay;
-	MutableRepAnimMontageInfo.PlayInstanceId = PlayInstanceId;
-
-	MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-	if (MutableRepAnimMontageInfo.AnimMontage && StartSectionName != NAME_None)
-	{
-		MutableRepAnimMontageInfo.SectionIdToPlay = SectionIdToPlay;
-	}
-	
-#elif (ENGINE_MAJOR_VERSION > 5) || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 3)
-
-	UAnimSequenceBase* Animation = NewMontageToPlay;
-	if (NewMontageToPlay->IsDynamicMontage())
-	{
-		Animation = NewMontageToPlay->GetFirstAnimReference();
-
-		check(!NewMontageToPlay->SlotAnimTracks.IsEmpty());
-		MutableRepAnimMontageInfo.SlotName = NewMontageToPlay->SlotAnimTracks[0].SlotName;
-		MutableRepAnimMontageInfo.BlendOutTime = NewMontageToPlay->GetDefaultBlendInTime();		
-	}
-	
-	MutableRepAnimMontageInfo.Animation = Animation;
-	MutableRepAnimMontageInfo.PlayInstanceId = PlayInstanceId;
-
-	MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-	if (MutableRepAnimMontageInfo.Animation && StartSectionName != NAME_None)
-	{
-		MutableRepAnimMontageInfo.SectionIdToPlay = SectionIdToPlay;
-	}
-	
-#endif
 }
 
 const UNinjaGASDataAsset* UNinjaGASAbilitySystemComponent::GetAbilityData() const
