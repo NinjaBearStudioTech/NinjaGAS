@@ -38,7 +38,7 @@ struct FUpdateAttributesMemory
 /**
  * Transfers combat attributes to the Blackboard, which may be useful for the agent's decision-making.
  */
-UCLASS(DisplayName = "Update Attributes", Category = "Ninja GAS")
+UCLASS(DisplayName = "Update Attributes", Category = "GAS")
 class NINJAGAS_API UBTService_UpdateAttributes : public UBTService
 {
 

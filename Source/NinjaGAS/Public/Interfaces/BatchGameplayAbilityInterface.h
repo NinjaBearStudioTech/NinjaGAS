@@ -24,7 +24,7 @@ public:
 	/**
 	 * Analogous to "K2_EndAbility" function, but exposed to identify that this is triggered by a batched RPC. 
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Batch Gameplay Ability")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "NBS|GAS|Interfaces|Batch Gameplay Ability")
 	void EndAbilityFromBatch();
 
 };

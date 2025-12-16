@@ -31,14 +31,14 @@ public:
 	 * Checks if this Gameplay Ability is passive, which is done via the passive tag.
 	 * Returns true if "Ability.Passive" is found in the Ability Tags container.
 	 */
-	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Gameplay Ability")
+	UFUNCTION(BlueprintPure, Category = "NBS|GAS|Abilities|Base Gameplay Ability")
 	bool IsPassiveAbility() const;
 
 	/**
 	 * Checks if this Gameplay Ability is meant to start on cooldown.
 	 * Returns true if "Ability.InitialCooldown" is found in the Ability Tags container.
 	 */
-	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Gameplay Ability")
+	UFUNCTION(BlueprintPure, Category = "NBS|GAS|Abilities|Base Gameplay Ability")
 	bool IsInitialCooldown() const;
 
 protected:
@@ -51,13 +51,13 @@ protected:
 	/**
 	 * Helper method that can finish an array of latent tasks.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Abilities|Base Gameplay Ability")
 	static void FinishLatentTasks(const TArray<UAbilityTask*>& Tasks);
 
 	/**
 	 * Helper method that can finish a latent task.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Abilities|Base Gameplay Ability")
 	static void FinishLatentTask(UAbilityTask* Task);
 	
 };

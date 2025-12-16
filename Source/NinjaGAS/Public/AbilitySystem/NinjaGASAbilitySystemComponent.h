@@ -150,7 +150,7 @@ public:
 	 * Takes into consideration the pointer in the Actor Info, before calling the
 	 * Getter function that will always attempt to retrieve it from the mesh.
 	 */
-	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Ability System")
+	UFUNCTION(BlueprintPure, Category = "NBS|GAS|Ability System")
 	virtual UAnimInstance* GetAnimInstanceFromActorInfo() const;
 	
 	/**
@@ -160,7 +160,7 @@ public:
 	 * @param Level				Initial level for the effect.
 	 * @return					The handle that can be used for maintenance.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Ability System")
 	FActiveGameplayEffectHandle ApplyGameplayEffectClassToSelf(TSubclassOf<UGameplayEffect> EffectClass, float Level = 1);
 
 	/**
@@ -171,7 +171,7 @@ public:
 	 * @param Input				An Input ID for the old input system.
 	 * @return					The handle that can be used for activation.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Ability System")
 	FGameplayAbilitySpecHandle GiveAbilityFromClass(const TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1, int32 Input = -1);
 
 	/**
@@ -184,7 +184,7 @@ public:
 	 *		Determines if the EndAbility is triggered right away or later, with its own RPC. This requires the Ability
 	 *		to either implement IBatchGameplayAbilityInterface or be a subclass of NinjaGASGameplayAbility.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Ability System")
 	virtual bool TryBatchActivateAbility(FGameplayAbilitySpecHandle AbilityHandle, bool bEndAbilityImmediately);
 
 	/**
@@ -193,7 +193,7 @@ public:
 	 * @param AbilityTags		Gameplay Tags used to target abilities to cancel.
 	 * @param CancelFilterTags	A filter that excludes an ability from being cancelled.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Ability System")
 	virtual void CancelAbilitiesByTags(FGameplayTagContainer AbilityTags, FGameplayTagContainer CancelFilterTags);
 	
 	/**
@@ -202,7 +202,7 @@ public:
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "NBS|GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters", GameplayTagFilter = "GameplayCue"))
 	void ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
@@ -213,7 +213,7 @@ public:
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
 	 */	
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "NBS|GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
 	void AddGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
@@ -222,13 +222,13 @@ public:
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
 	 */		
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Ninja GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "NBS|GAS|Ability System", meta = (AutoCreateRefTerm = "GameplayCueParameters"))
 	void RemoveGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
 	 * Resets all Gameplay Abilities, Gameplay Effects, Attribute Sets and additional Gameplay Cues.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Ability System")
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Ability System")
 	virtual void ResetAbilitySystemComponent();
 	
 	/**

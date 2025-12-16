@@ -10,7 +10,7 @@ class UGameplayAbility;
 /**
  * Selects a Gameplay Ability from a list, optionally forcing changes between current and new selections.
  */
-UCLASS(DisplayName = "Select Gameplay Ability", Category = "Ninja GAS")
+UCLASS(DisplayName = "Select Gameplay Ability", Category = "GAS")
 class NINJAGAS_API UBTService_SelectGameplayAbility : public UBTService
 {
 	

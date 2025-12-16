@@ -39,7 +39,7 @@ public:
 	 * @param MaxWait			Maximum time to wait in seconds.
 	 * @return					Configured instance of the async action.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Async", DisplayName = "Wait For Ability System", meta = (DefaultToSelf = "AbilityOwner", BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Async|Wait For Ability System", DisplayName = "Wait For Ability System", meta = (DefaultToSelf = "AbilityOwner", BlueprintInternalUseOnly = "true"))
 	static UNinjaGASAction_WaitForAbilitySystem* CreateAction(AActor* AbilityOwner, float CheckInterval, float MaxWait = 2.f);
 	
 	// -- Begin UObject implementation
@@ -54,7 +54,7 @@ public:
 	/**
 	 * Provides the Ability Owner set to this task.
 	 */
-	UFUNCTION(BlueprintPure, Category = "Ninja GAS|Async")
+	UFUNCTION(BlueprintPure, Category = "NBS|GAS|Async|Wait For Ability System")
 	AActor* GetAbilityOwner() const;
 	
 protected:

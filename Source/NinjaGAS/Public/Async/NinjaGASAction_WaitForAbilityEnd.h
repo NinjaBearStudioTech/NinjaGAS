@@ -31,7 +31,7 @@ public:
 	 * @param AbilityCriteria	Gameplay Tag Query that will match ability tags.
 	 * @return					Configured instance of the async action.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ninja GAS|Async", DisplayName = "Wait For Ability End", meta = (DefaultToSelf = "AbilityOwner", BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintCallable, Category = "NBS|GAS|Async|Wait for Ability End", DisplayName = "Wait For Ability End", meta = (DefaultToSelf = "AbilityOwner", BlueprintInternalUseOnly = "true"))
 	static UNinjaGASAction_WaitForAbilityEnd* CreateAction(AActor* AbilityOwner, FGameplayTagQuery AbilityCriteria);
 	
 	virtual void Activate() override;

@@ -76,13 +76,13 @@ protected:
 	 *		Actor that owns the Ability System Component. It may be the same character
 	 *		or an external source such as the Player State.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ninja GAS|Character")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "NBS|GAS|Character")
 	virtual void SetupAbilitySystemComponent(AActor* AbilitySystemOwner);
 	
 	/**
 	 * Clears the ability system component, most likely due to the character being destroyed.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ninja GAS|Character")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "NBS|GAS|Character")
 	virtual void ClearAbilitySystemComponent();
 
 	/**

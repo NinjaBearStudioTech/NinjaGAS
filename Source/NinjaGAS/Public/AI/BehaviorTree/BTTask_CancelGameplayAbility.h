@@ -11,7 +11,7 @@ class UGameplayAbility;
 /**
  * Cancels a gameplay ability.
  */
-UCLASS(DisplayName = "Cancel Gameplay Ability", Category = "Ninja GAS")
+UCLASS(DisplayName = "Cancel Gameplay Ability", Category = "GAS")
 class NINJAGAS_API UBTTask_CancelGameplayAbility : public UBTTaskNode
 {
     
@@ -24,19 +24,19 @@ public:
     EAgentAbilityActivationMode CancellationMode;
     
     /** The blackboard location used to retrieve the ability class. */
-    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "ActivationMode == EAgentAbilityActivationMode::BlackboardClass", EditConditionHides))
+    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "CancellationMode == EAgentAbilityActivationMode::BlackboardClass", EditConditionHides))
     FBlackboardKeySelector AbilityClassKey;
 
     /** Ability Class directly provided to this task, used for cancellation. */
-    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "ActivationMode == EAgentAbilityActivationMode::AbilityClass", EditConditionHides))
+    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "CancellationMode == EAgentAbilityActivationMode::AbilityClass", EditConditionHides))
     TSubclassOf<UGameplayAbility> AbilityClass;
 
     /** Gameplay Tags used to cancel the ability. All Tags must be present. */
-    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "ActivationMode == EAgentAbilityActivationMode::GameplayTags", EditConditionHides))
+    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "CancellationMode == EAgentAbilityActivationMode::GameplayTags", EditConditionHides))
     FGameplayTagContainer AbilityTargetTags;
 
     /** If cancelling via tags, this is a filter that prevents an ability to be cancelled. */
-    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "ActivationMode == EAgentAbilityActivationMode::GameplayTags", EditConditionHides))
+    UPROPERTY(EditAnywhere, Category = "Gameplay Ability Cancellation", meta = (EditCondition = "CancellationMode == EAgentAbilityActivationMode::GameplayTags", EditConditionHides))
     FGameplayTagContainer CancelFilterTags;
     
     UBTTask_CancelGameplayAbility();

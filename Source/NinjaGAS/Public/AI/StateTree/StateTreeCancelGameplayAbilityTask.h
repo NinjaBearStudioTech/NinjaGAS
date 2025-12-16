@@ -31,7 +31,7 @@ struct FStateTreeCancelGameplayAbilityTaskInstanceData
 /**
  * Cancels a Gameplay Ability and completes the state when done.
  */
-USTRUCT(meta = (DisplayName = "Cancel Gameplay Ability", Category = "G.A.S."))
+USTRUCT(meta = (DisplayName = "Cancel Gameplay Ability", Category = "GAS"))
 struct NINJAGAS_API FStateTreeCancelGameplayAbilityTask : public FStateTreeTaskCommonBase
 {
 	

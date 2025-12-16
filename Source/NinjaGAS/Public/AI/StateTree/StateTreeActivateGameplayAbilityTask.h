@@ -54,7 +54,7 @@ struct FStateTreeActivateGameplayAbilityTaskInstanceData
 /**
  * Activates a Gameplay Ability and completes the state when the ability finishes.
  */
-USTRUCT(meta = (DisplayName = "Activate Gameplay Ability", Category = "G.A.S."))
+USTRUCT(meta = (DisplayName = "Activate Gameplay Ability", Category = "GAS"))
 struct NINJAGAS_API FStateTreeActivateGameplayAbilityTask : public FStateTreeTaskCommonBase
 {
 	

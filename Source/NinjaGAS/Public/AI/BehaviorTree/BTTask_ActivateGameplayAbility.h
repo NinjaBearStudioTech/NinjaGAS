@@ -22,7 +22,7 @@ struct FExecuteGameplayAbilityMemory
 /**
  * Activates a gameplay ability using the request activation mode.
  */
-UCLASS(DisplayName = "Activate Gameplay Ability", Category = "Ninja GAS")
+UCLASS(DisplayName = "Activate Gameplay Ability", Category = "GAS")
 class NINJAGAS_API UBTTask_ActivateGameplayAbility : public UBTTaskNode
 {
     

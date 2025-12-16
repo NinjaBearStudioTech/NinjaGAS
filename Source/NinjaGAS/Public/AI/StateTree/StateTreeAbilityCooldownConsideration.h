@@ -30,7 +30,7 @@ struct FStateTreeAbilityCooldownConsiderationInstanceData
 /**
  * Provides the utility value based on the ability cooldown.
  */
-USTRUCT(DisplayName = "Ability Cooldown", Category = "G.A.S.")
+USTRUCT(DisplayName = "Ability Cooldown", Category = "GAS")
 struct NINJAGAS_API FStateTreeAbilityCooldownConsideration : public FStateTreeConsiderationCommonBase
 {
 	

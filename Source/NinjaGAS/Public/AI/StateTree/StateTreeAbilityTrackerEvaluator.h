@@ -47,7 +47,7 @@ struct FStateTreeAbilityTrackerEvaluatorInstanceData
  * Abilities are considered to be the same, based on the Gameplay Tags used to identify them,
  * which is done in their "Ability"/"Asset" tags container.
  */
-USTRUCT(DisplayName = "Ability Tracker", Category = "G.A.S.")
+USTRUCT(DisplayName = "Ability Tracker", Category = "GAS")
 struct NINJAGAS_API FStateTreeAbilityTrackerEvaluator : public FStateTreeEvaluatorCommonBase
 {
 	
