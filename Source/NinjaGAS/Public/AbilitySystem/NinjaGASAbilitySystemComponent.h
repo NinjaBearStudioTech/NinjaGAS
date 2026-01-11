@@ -11,13 +11,12 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "Animation/AnimMontage.h"
 #include "Interfaces/AbilitySystemDefaultsInterface.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "Types/FNinjaAbilityDefaultHandles.h"
 #include "Types/FNinjaAbilityDefaults.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
-
-struct FMontageBlendSettings;
 
 class UNinjaGASDataAsset;
 class UAnimMontage;

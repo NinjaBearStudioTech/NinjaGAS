@@ -9,6 +9,10 @@
 //
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/NinjaGASAbilitySystemComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/World.h"
 #include "Interfaces/AbilityAnimationMontageAwareInterface.h"
 
 static TAutoConsoleVariable<float> CVarReplayMontageErrorThreshold(
