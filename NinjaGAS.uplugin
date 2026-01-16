@@ -1,7 +1,7 @@
 ﻿{
 	"FileVersion": 3,
 	"Version": 5,
-	"VersionName": "1.10.14",
+	"VersionName": "1.11.14",
 	"FriendlyName": "NinjaGAS",
 	"Description": "Base configuration and utility for the Gameplay Ability System (GAS).",
 	"Category": "Gameplay",
@@ -20,16 +20,25 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
-                "Win64", "Linux", "Mac"
+				"Win64",
+				"Linux",
+				"Mac"
 			]
 		},
 		{
 			"Name": "NinjaGASEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
-            "PlatformAllowList": [
-                "Win64", "Linux", "Mac"
-            ]            
+			"PlatformAllowList": [
+				"Win64",
+				"Linux",
+				"Mac"
+			]
+		},
+		{
+			"Name": "NinjaGASPaper2D",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
@@ -37,10 +46,10 @@
 			"Name": "GameplayAbilities",
 			"Enabled": true
 		},
-        {
-            "Name": "GameplayStateTree",
-            "Enabled": true
-        },        
+		{
+			"Name": "GameplayStateTree",
+			"Enabled": true
+		},
 		{
 			"Name": "ModelViewViewModel",
 			"Enabled": true
@@ -50,8 +59,12 @@
 			"Enabled": true
 		},
         {
-            "Name": "StateTree",
+            "Name": "Paper2D",
             "Enabled": true
-        }
+        },
+		{
+			"Name": "StateTree",
+			"Enabled": true
+		}
 	]
 }
