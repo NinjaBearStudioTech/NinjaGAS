@@ -37,7 +37,7 @@ public:
 private:
 	
 	/** The flipbook component associated with this character. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess))
 	TObjectPtr<UPaperFlipbookComponent> Sprite;	
 	
 };
