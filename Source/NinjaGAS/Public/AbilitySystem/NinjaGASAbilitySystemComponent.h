@@ -345,6 +345,7 @@ public:
 	virtual float PlayMontageSimulatedForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* Montage, float InPlayRate, bool bOverrideBlendIn, const FMontageBlendSettings& BlendInOverride, float StartTimeSeconds = 0.f, FName StartSectionName = NAME_None);
 
 	// Stops whatever montage is currently playing. Expectation is caller should only be stopping it if they are the current animating ability (or have good reason not to check)
+	UFUNCTION()
 	virtual void CurrentMontageStopForMesh(USkeletalMeshComponent* InMesh, float OverrideBlendOutTime = -1.0f);
 
 	// Stops all montages currently playing
@@ -357,12 +358,15 @@ public:
 	virtual void ClearAnimatingAbilityForAllMeshes(UGameplayAbility* Ability);
 
 	// Jumps current montage to given section. Expectation is caller should only be stopping it if they are the current animating ability (or have good reason not to check)
+	UFUNCTION()
 	virtual void CurrentMontageJumpToSectionForMesh(USkeletalMeshComponent* InMesh, FName SectionName);
 
 	// Sets current montages next section name. Expectation is caller should only be stopping it if they are the current animating ability (or have good reason not to check)
+	UFUNCTION()	
 	virtual void CurrentMontageSetNextSectionNameForMesh(USkeletalMeshComponent* InMesh, FName FromSectionName, FName ToSectionName);
 
 	// Sets current montage's play rate
+	UFUNCTION()
 	virtual void CurrentMontageSetPlayRateForMesh(USkeletalMeshComponent* InMesh, float InPlayRate);
 
 	// Returns true if the passed in ability is the current animating ability
