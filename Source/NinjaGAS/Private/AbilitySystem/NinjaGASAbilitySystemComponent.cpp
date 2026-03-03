@@ -22,28 +22,22 @@
 #include "Types/FNinjaAbilityDefaultHandles.h"
 #include "Runtime/Launch/Resources/Version.h"
 
-bool FPlayTagGameplayAbilityRepAnimMontage::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
-{
-	FGameplayAbilityRepAnimMontage::NetSerialize(Ar, Map, bOutSuccess);
-
-	Ar << bOverrideBlendIn;
-	Ar << BlendInOverride.Blend.BlendTime;
-	Ar << BlendInOverride.Blend.BlendOption;
-	Ar << BlendInOverride.Blend.CustomCurve;
-	Ar << BlendInOverride.BlendMode;
-	Ar << BlendInOverride.BlendProfile;
-	
-	return true;
-}
-
-UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
+UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent() 
+	: RepAnimMontageInfoForMeshes(this)
 {
 	static constexpr bool bIsReplicated = true;
 	SetIsReplicatedByDefault(bIsReplicated);
 
+	bWantsInitializeComponent = true;
 	bPendingMontageRepForMesh = false;
 	bEnableAbilityBatchRPC = true;
 	bResetStateWhenAvatarChanges = false;
+}
+
+void UNinjaGASAbilitySystemComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	RepAnimMontageInfoForMeshes.SetAbilitySystemComponent(this);
 }
 
 void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -395,10 +389,9 @@ void UNinjaGASAbilitySystemComponent::GetLifetimeReplicatedProps(TArray<FLifetim
 
 bool UNinjaGASAbilitySystemComponent::GetShouldTick() const
 {
-	for (const FGameplayAbilityRepAnimMontageForMesh& RepMontageInfo : RepAnimMontageInfoForMeshes)
+	for (const FGameplayAbilityRepAnimMontageForMesh& RepMontageInfo : RepAnimMontageInfoForMeshes.Entries)
 	{
-		const bool bHasReplicatedMontageInfoToUpdate = (IsOwnerActorAuthoritative() && RepMontageInfo.RepMontageInfo.IsStopped == false);
-
+		const bool bHasReplicatedMontageInfoToUpdate = IsOwnerActorAuthoritative() && RepMontageInfo.RepMontageInfo.IsStopped == false;
 		if (bHasReplicatedMontageInfoToUpdate)
 		{
 			return true;

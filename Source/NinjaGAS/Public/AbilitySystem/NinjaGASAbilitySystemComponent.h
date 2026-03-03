@@ -16,84 +16,12 @@
 #include "Runtime/Launch/Resources/Version.h"
 #include "Types/FNinjaAbilityDefaultHandles.h"
 #include "Types/FNinjaAbilityDefaults.h"
+#include "Types/FAbilityMontageReplication.h"
 #include "NinjaGASAbilitySystemComponent.generated.h"
 
 class UNinjaGASDataAsset;
 class UAnimMontage;
 class USkeletalMeshComponent;
-
-/**
- * Data about montages that were played locally (all montages in case of server. predictive montages in case of client). Never replicated directly.
- */
-USTRUCT()
-struct NINJAGAS_API FGameplayAbilityLocalAnimMontageForMesh
-{
-	GENERATED_BODY();
-
-	UPROPERTY()
-	USkeletalMeshComponent* Mesh;
-
-	UPROPERTY()
-	FGameplayAbilityLocalAnimMontage LocalMontageInfo;
-
-	FGameplayAbilityLocalAnimMontageForMesh(USkeletalMeshComponent* InMesh = nullptr)
-		: Mesh(InMesh)
-	{
-	}
-
-	FGameplayAbilityLocalAnimMontageForMesh(USkeletalMeshComponent* InMesh, const FGameplayAbilityLocalAnimMontage& InLocalMontageInfo)
-		: Mesh(InMesh), LocalMontageInfo(InLocalMontageInfo)
-	{
-	}
-};
-
-USTRUCT()
-struct NINJAGAS_API FPlayTagGameplayAbilityRepAnimMontage : public FGameplayAbilityRepAnimMontage
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	bool bOverrideBlendIn;
-
-	UPROPERTY()
-	FMontageBlendSettings BlendInOverride;
-
-	FPlayTagGameplayAbilityRepAnimMontage()
-		: bOverrideBlendIn(false)
-		, BlendInOverride({})
-	{}
-	
-	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
-};
-
-/**
- * Data about montages that is replicated to simulated clients.
- */
-USTRUCT()
-struct NINJAGAS_API FGameplayAbilityRepAnimMontageForMesh
-{
-	GENERATED_BODY();
-
-	UPROPERTY()
-	USkeletalMeshComponent* Mesh;
-
-	UPROPERTY()
-	FPlayTagGameplayAbilityRepAnimMontage RepMontageInfo;
-
-	FGameplayAbilityRepAnimMontageForMesh(USkeletalMeshComponent* InMesh = nullptr)
-		: Mesh(InMesh)
-	{
-	}
-};
-
-template<>
-struct TStructOpsTypeTraits<FPlayTagGameplayAbilityRepAnimMontage> : public TStructOpsTypeTraitsBase2<FPlayTagGameplayAbilityRepAnimMontage>
-{
-	enum
-	{
-		WithNetSerializer = true,
-	};
-};
 
 /**
  * Specialized version of the Ability System Component.
@@ -129,6 +57,7 @@ public:
 	UNinjaGASAbilitySystemComponent();
 
 	// -- Begin Ability System Component implementation
+	virtual void InitializeComponent() override;
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	virtual void ClearActorInfo() override;
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
@@ -396,6 +325,11 @@ public:
 	// Returns amount of time left in current section
 	float GetCurrentMontageSectionTimeLeftForMesh(USkeletalMeshComponent* InMesh);		
 	
+	/** 
+	 * Callback from the animation data replication that handles montage playback.
+	 */
+	void PostAnimationEntryChange(FGameplayAbilityRepAnimMontageForMesh& Entry);
+	
 protected:
 	
 	UPROPERTY()
@@ -412,14 +346,10 @@ protected:
 	 * Data structure for replicating montage info to simulated clients
 	 * Will be max one element per skeletal mesh on the AvatarActor
 	 */
-	UPROPERTY(ReplicatedUsing = OnRep_ReplicatedAnimMontageForMesh)
-	TArray<FGameplayAbilityRepAnimMontageForMesh> RepAnimMontageInfoForMeshes;	
+	UPROPERTY(Replicated)
+	FGameplayAbilityRepAnimMontageContainer RepAnimMontageInfoForMeshes;	
 
-	// Finds the existing FGameplayAbilityLocalAnimMontageForMesh for the mesh or creates one if it doesn't exist
 	FGameplayAbilityLocalAnimMontageForMesh& GetLocalAnimMontageInfoForMesh(USkeletalMeshComponent* InMesh);
-	
-	// Finds the existing FGameplayAbilityRepAnimMontageForMesh for the mesh or creates one if it doesn't exist
-	FGameplayAbilityRepAnimMontageForMesh& GetGameplayAbilityRepAnimMontageForMesh(USkeletalMeshComponent* InMesh);
 
 	// Called when a prediction key that played a montage is rejected
 	virtual void OnPredictiveMontageRejectedForMesh(USkeletalMeshComponent* InMesh, UAnimMontage* PredictiveMontage);
@@ -430,9 +360,6 @@ protected:
 
 	// Copy over playing flags for duplicate animation data
 	void AnimMontage_UpdateForcedPlayFlagsForMesh(FGameplayAbilityRepAnimMontageForMesh& OutRepAnimMontageInfo);	
-
-	UFUNCTION()
-	virtual void OnRep_ReplicatedAnimMontageForMesh();
 
 	// Returns true if we are ready to handle replicated montage information
 	virtual bool IsReadyForReplicatedMontageForMesh();
