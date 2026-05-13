@@ -27,7 +27,7 @@ FGameplayAbilityRepAnimMontageContainer::FGameplayAbilityRepAnimMontageContainer
 }
 
 void FGameplayAbilityRepAnimMontageContainer::SetAbilitySystemComponent(UNinjaGASAbilitySystemComponent* NewAbilitySystemComponent)
-{\
+{
 	check(IsValid(NewAbilitySystemComponent));
 	AbilitySystemComponent = NewAbilitySystemComponent;
 }
@@ -44,6 +44,9 @@ FGameplayAbilityRepAnimMontageForMesh& FGameplayAbilityRepAnimMontageContainer::
 
 	FGameplayAbilityRepAnimMontageForMesh& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Mesh = Mesh;
+	
+	AbilitySystemComponent->SynchronizeRepAnimMontageInfo(NewEntry);
+	
 	return NewEntry;
 }
 

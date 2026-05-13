@@ -32,6 +32,7 @@ UNinjaGASAbilitySystemComponent::UNinjaGASAbilitySystemComponent()
 	bPendingMontageRepForMesh = false;
 	bEnableAbilityBatchRPC = true;
 	bResetStateWhenAvatarChanges = false;
+	bSyncMeshAnimInfoWithLocalAnimInfo = true;
 }
 
 void UNinjaGASAbilitySystemComponent::InitializeComponent()

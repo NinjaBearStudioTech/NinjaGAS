@@ -326,13 +326,18 @@ public:
 	float GetCurrentMontageSectionTimeLeftForMesh(USkeletalMeshComponent* InMesh);		
 	
 	/** 
+	 * Synchronizes a mesh related animation info with the internal one used by the Ability System.
+	 */
+	void SynchronizeRepAnimMontageInfo(const FGameplayAbilityRepAnimMontageForMesh& NewRepAnimMontageInfoForMesh);
+	
+	/** 
 	 * Callback from the animation data replication that handles montage playback.
 	 */
 	void PostAnimationEntryChange(FGameplayAbilityRepAnimMontageForMesh& Entry);
 	
 protected:
 	
-	UPROPERTY()
+	bool bSyncMeshAnimInfoWithLocalAnimInfo;
 	bool bPendingMontageRepForMesh;
 	
 	/** 

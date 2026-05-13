@@ -59,6 +59,13 @@ float UNinjaGASAbilitySystemComponent::PlayMontageForMesh(UGameplayAbility* Anim
 			AnimMontageInfo.LocalMontageInfo.AnimMontage = Montage;
 			AnimMontageInfo.LocalMontageInfo.AnimatingAbility = AnimatingAbility;
 			
+			if (bSyncMeshAnimInfoWithLocalAnimInfo)
+			{
+				LocalAnimMontageInfo.AnimMontage = Montage;
+				LocalAnimMontageInfo.AnimatingAbility = AnimatingAbility;
+				LocalAnimMontageInfo.PlayInstanceId = (LocalAnimMontageInfo.PlayInstanceId < UINT8_MAX ? LocalAnimMontageInfo.PlayInstanceId + 1 : 0);	
+			}
+			
 			// Allow any ability, regardless if they are provided by Ninja GAS, to become aware of the montage.
 			IAbilityAnimationMontageAwareInterface* MontageAware = Cast<IAbilityAnimationMontageAwareInterface>(InAbility);
 			if (MontageAware)
@@ -374,6 +381,11 @@ float UNinjaGASAbilitySystemComponent::GetCurrentMontageSectionTimeLeftForMesh(U
 	}
 
 	return -1.f;	
+}
+
+void UNinjaGASAbilitySystemComponent::SynchronizeRepAnimMontageInfo(const FGameplayAbilityRepAnimMontageForMesh& NewRepAnimMontageInfoForMesh)
+{
+	SetRepAnimMontageInfo(NewRepAnimMontageInfoForMesh.RepMontageInfo);
 }
 
 void UNinjaGASAbilitySystemComponent::PostAnimationEntryChange(FGameplayAbilityRepAnimMontageForMesh& Entry)
