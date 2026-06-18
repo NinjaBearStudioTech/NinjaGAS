@@ -44,6 +44,7 @@ UCLASS(ClassGroup=(NinjaGAS), meta=(BlueprintSpawnableComponent))
 class NINJAGAS_API UNinjaGASAbilitySystemComponent : public UAbilitySystemComponent, public IAbilitySystemDefaultsInterface
 {
 
+	DECLARE_MULTICAST_DELEGATE_OneParam(FNinjaAbilityGivenDelegate, const FGameplayAbilitySpec&);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilitySystemAvatarChangedSignature, AActor*, NewAvatar);
 	
 	GENERATED_BODY()
@@ -72,6 +73,8 @@ public:
 	virtual const UNinjaGASDataAsset* GetAbilityData() const override;
 	// -- End Ability System Defaults implementation
 
+	FNinjaAbilityGivenDelegate& OnAbilityGiven() { return AbilityGivenDelegate; }
+	
 	/**
 	 * Obtains the Anim Instance from the Actor Info.
 	 *
@@ -125,7 +128,7 @@ public:
 	virtual void CancelAbilitiesByTags(FGameplayTagContainer AbilityTags, FGameplayTagContainer CancelFilterTags);
 	
 	/**
-	 * Locally executes a <b>Static<b> Gameplay Cue.
+	 * Locally executes a <b>Static</b> Gameplay Cue.
 	 * 
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
@@ -134,7 +137,7 @@ public:
 	void ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
-	 * Locally adds an <b>Actor<b> Gameplay Cue.
+	 * Locally adds an <b>Actor</b> Gameplay Cue.
 	 *
 	 * When adding this Gameplay Cue locally, make sure to also remove it locally.
 	 * 
@@ -145,7 +148,7 @@ public:
 	void AddGameplayCueLocally(UPARAM(meta = (Categories = "GameplayCue")) const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters) const;
 
 	/**
-	 * Locally removes an <b>Actor<b> Gameplay Cue.
+	 * Locally removes an <b>Actor</b> Gameplay Cue.
 	 * 
 	 * @param GameplayCueTag			Gameplay Tag for the Gameplay Cue.
 	 * @param GameplayCueParameters		Parameters for the Gameplay Cue.
@@ -208,6 +211,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System", DisplayName = "Enable Ability Batch RPCs")
 	bool bEnableAbilityBatchRPC;
 	
+	// -- Begin Ability System Component implementation
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	// -- End Ability System Component implementation
+	
 	/**
 	 * Initializes default abilities, effects and attribute sets granted by the owner.
 	 * The initialization for owner defaults only ever happens once, since the owner won't change.
@@ -247,6 +254,9 @@ protected:
 
 private:
 
+	/** Broadcasts when abilities have been granted. */
+	FNinjaAbilityGivenDelegate AbilityGivenDelegate;
+	
 	/** Setup and handles granted by the owner. */
 	FAbilityDefaultHandles OwnerHandles;
 

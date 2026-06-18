@@ -61,6 +61,12 @@ void UNinjaGASAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor,
 	}
 }
 
+void UNinjaGASAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnGiveAbility(AbilitySpec);
+	AbilityGivenDelegate.Broadcast(AbilitySpec);
+}
+
 void UNinjaGASAbilitySystemComponent::InitializeDefaultsFromOwner(const AActor* NewOwner)
 {
 	if (!IsValid(NewOwner) || OwnerHandles.IsValid())
