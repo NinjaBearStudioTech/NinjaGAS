@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Templates/SubclassOf.h"
 #include "AnimNotifyState_ApplyGameplayEffect.generated.h"
 
 class UGameplayEffect;

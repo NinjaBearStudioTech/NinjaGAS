@@ -4,6 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "GameplayTagContainer.h"
+#include "Components/SkeletalMeshComponent.h"
 
 void UAnimNotifyState_ApplyLooseGameplayTags::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, 
 	const float TotalDuration, const FAnimNotifyEventReference& EventReference)
